@@ -1,0 +1,9 @@
+start - Welcome and built-in GUI bot features overview
+help - Complete help with built-in GUI and AnyDesk features  
+auth - Connect Google Drive (Bullseye-optimized for built-in GUI)
+d - Mirror to Google Drive (multi-server support)
+t - Download torrent or magnet links
+dc - Clone Google Drive files and folders
+anydesk - AnyDesk remote access to built-in GUI
+system - STB HG680P Bullseye built-in GUI system information
+stats - Enhanced bot statistics with built-in GUI status
