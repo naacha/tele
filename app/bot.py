@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-TELEGRAM BOT FOR STB HG680P ARMBIAN 20.05 BULLSEYE (BUILT-IN GUI)
+TELEGRAM BOT FOR STB HG680P - MULTI ARMBIAN VERSION SUPPORT
 ✅ Channel subscription check (@ZalheraThink) - ID: -1001802424804
 ✅ Bot Token integrated: 8436081597:AAE-8bfWrbvhl26-l9y65p48DfWjQOYPR2A
 ✅ JMDKH Features: Torrent, Magnet, GDrive Clone, Direct Mirror
-✅ Optimized for Armbian 20.05 built-in GUI (no XFCE4 install needed)
-✅ AnyDesk remote access integration
-✅ OAuth2 error 400 FIXED for Bullseye
+✅ Armbian 20.11 Bullseye support (credentials.json method)
+✅ Armbian 25.11 Bookworm support (env token method)
+✅ AnyDesk installation with dependency fixing
+✅ Multi-OS OAuth2 compatibility
 """
 
 import os
@@ -31,14 +32,14 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InlineQ
 from telegram.ext import Application, CommandHandler, ContextTypes, InlineQueryHandler
 from telegram.error import BadRequest, Forbidden
 
-# Google Drive imports - Bullseye compatible
+# Google Drive imports - multi-version compatible
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.http import MediaFileUpload
 
-# Setup logging optimized for Bullseye
+# Setup logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO,
@@ -63,7 +64,7 @@ REQUIRED_CHANNEL = '@ZalheraThink'
 CHANNEL_URL = 'https://t.me/ZalheraThink'
 CHANNEL_ID = -1001802424804
 
-# Settings optimized for Armbian 20.05 Bullseye with built-in GUI
+# Settings optimized for multi-version Armbian
 MAX_CONCURRENT = int(os.getenv('MAX_CONCURRENT_DOWNLOADS', '2'))
 MAX_SPEED_MBPS = float(os.getenv('MAX_SPEED_MBPS', '15'))
 CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', '8192'))
@@ -71,13 +72,13 @@ CHUNK_SIZE = int(os.getenv('CHUNK_SIZE', '8192'))
 # Bot info
 BOT_USERNAME = os.getenv('BOT_USERNAME', 'your_bot_username')
 
-# Bullseye specific settings
+# Multi-version specific settings
 ARIA2_PORT = 6800
-ARIA2_SECRET = os.getenv('ARIA2_SECRET', 'bullseye_secret')
+ARIA2_SECRET = os.getenv('ARIA2_SECRET', 'stb_secret')
 
 # Ensure directories exist
 def ensure_directories():
-    """Create required directories for Bullseye deployment"""
+    """Create required directories for multi-version deployment"""
     dirs = ['/app/data', '/app/downloads', '/app/logs', '/app/credentials', '/app/torrents']
     for dir_path in dirs:
         os.makedirs(dir_path, exist_ok=True)
@@ -85,25 +86,104 @@ def ensure_directories():
 
 ensure_directories()
 
-class BullseyeSystemInfo:
-    """System information optimized for Armbian 20.05 Bullseye built-in GUI"""
+class ArmbianSystemInfo:
+    """Multi-version Armbian system information detector"""
+
+    @staticmethod
+    def detect_armbian_version():
+        """Detect Armbian version and base OS"""
+        try:
+            if os.path.exists('/etc/armbian-release'):
+                with open('/etc/armbian-release', 'r') as f:
+                    content = f.read()
+                    info = {}
+                    for line in content.split('\n'):
+                        if '=' in line and not line.startswith('#'):
+                            key, value = line.split('=', 1)
+                            info[key] = value.strip('"')
+
+                    version = info.get('VERSION', 'Unknown')
+                    # Determine base OS from version
+                    if '20.11' in version or 'bullseye' in version.lower():
+                        base_os = 'bullseye'
+                    elif '25.11' in version or 'bookworm' in version.lower():
+                        base_os = 'bookworm'
+                    else:
+                        # Try to detect from /etc/os-release
+                        base_os = ArmbianSystemInfo.detect_base_os()
+
+                    info['BASE_OS'] = base_os
+                    return info
+
+            # Fallback detection
+            base_os = ArmbianSystemInfo.detect_base_os()
+            return {
+                'VERSION': 'Unknown',
+                'BRANCH': 'current',
+                'BOARD': 'HG680P',
+                'BASE_OS': base_os
+            }
+        except Exception as e:
+            logger.warning(f"Could not detect Armbian version: {e}")
+            return {
+                'VERSION': 'Unknown',
+                'BRANCH': 'current', 
+                'BOARD': 'HG680P',
+                'BASE_OS': 'bullseye'
+            }
+
+    @staticmethod
+    def detect_base_os():
+        """Detect base OS (bullseye/bookworm) from system"""
+        try:
+            if os.path.exists('/etc/os-release'):
+                with open('/etc/os-release', 'r') as f:
+                    content = f.read().lower()
+                    if 'bookworm' in content:
+                        return 'bookworm'
+                    elif 'bullseye' in content:
+                        return 'bullseye'
+
+            # Try lsb_release
+            result = subprocess.run(['lsb_release', '-cs'], capture_output=True, text=True)
+            if result.returncode == 0:
+                codename = result.stdout.strip().lower()
+                if codename in ['bookworm', 'bullseye']:
+                    return codename
+
+            # Default fallback
+            return 'bullseye'
+
+        except:
+            return 'bullseye'
+
+    @staticmethod
+    def get_auth_method():
+        """Determine authentication method based on OS version"""
+        armbian_info = ArmbianSystemInfo.detect_armbian_version()
+        base_os = armbian_info.get('BASE_OS', 'bullseye')
+
+        if base_os == 'bookworm':
+            return 'env_tokens'  # Use GOOGLE_CLIENT_ID/SECRET from env
+        else:
+            return 'credentials_file'  # Use credentials.json file
 
     @staticmethod
     def detect_gui_environment():
-        """Detect built-in GUI environment on Armbian 20.05 Bullseye"""
+        """Detect GUI environment on multi-version Armbian"""
         try:
             # Check for X11 display
             if os.environ.get('DISPLAY'):
                 return True
 
-            # Check for running display managers (common in Armbian built-in GUI)
+            # Check for running display managers
             display_managers = ['lightdm', 'gdm3', 'sddm', 'nodm']
             for dm in display_managers:
                 result = subprocess.run(['pgrep', dm], capture_output=True)
                 if result.returncode == 0:
                     return True
 
-            # Check for desktop environments (Armbian built-in)
+            # Check for desktop environments
             desktop_processes = ['lxsession', 'xfce4-session', 'openbox', 'fluxbox', 'matchbox']
             for de in desktop_processes:
                 result = subprocess.run(['pgrep', de], capture_output=True)
@@ -121,13 +201,13 @@ class BullseyeSystemInfo:
 
     @staticmethod
     def detect_desktop_environment():
-        """Detect which desktop environment is running (Armbian built-in)"""
+        """Detect desktop environment"""
         desktop_environments = {
-            'lxsession': 'LXDE (Armbian built-in)',
+            'lxsession': 'LXDE',
             'xfce4-session': 'XFCE4',
-            'openbox': 'Openbox (Armbian built-in)',
+            'openbox': 'Openbox',
             'fluxbox': 'Fluxbox',
-            'matchbox': 'Matchbox (Armbian built-in)',
+            'matchbox': 'Matchbox',
             'gnome-session': 'GNOME',
             'mate-session': 'MATE'
         }
@@ -136,40 +216,23 @@ class BullseyeSystemInfo:
             try:
                 result = subprocess.run(['pgrep', process], capture_output=True)
                 if result.returncode == 0:
-                    return de_name
+                    return f"{de_name} (Built-in)"
             except:
                 continue
 
-        # If X is running but no specific DE detected, assume minimal GUI
+        # If X is running but no specific DE detected
         try:
             result = subprocess.run(['pgrep', 'Xorg'], capture_output=True)
             if result.returncode == 0:
-                return 'Minimal GUI (Armbian built-in)'
+                return 'Minimal GUI (Built-in)'
         except:
             pass
 
         return 'None'
 
     @staticmethod
-    def get_armbian_info():
-        """Get Armbian specific information"""
-        try:
-            if os.path.exists('/etc/armbian-release'):
-                with open('/etc/armbian-release', 'r') as f:
-                    content = f.read()
-                    info = {}
-                    for line in content.split('\n'):
-                        if '=' in line:
-                            key, value = line.split('=', 1)
-                            info[key] = value.strip('"')
-                    return info
-            return {}
-        except:
-            return {}
-
-    @staticmethod
     def get_system_info():
-        """Get comprehensive Bullseye system information"""
+        """Get comprehensive multi-version system information"""
         try:
             # Basic system info
             with open('/proc/meminfo', 'r') as f:
@@ -187,10 +250,13 @@ class BullseyeSystemInfo:
             storage_info = storage.stdout.split('\n')[1].split() if storage.returncode == 0 else ["Unknown"]
 
             # Armbian info
-            armbian_info = BullseyeSystemInfo.get_armbian_info()
+            armbian_info = ArmbianSystemInfo.detect_armbian_version()
 
-            # GUI detection - check for built-in Armbian GUI
-            gui_available = BullseyeSystemInfo.detect_gui_environment()
+            # GUI detection
+            gui_available = ArmbianSystemInfo.detect_gui_environment()
+
+            # Auth method
+            auth_method = ArmbianSystemInfo.get_auth_method()
 
             return {
                 'architecture': platform.machine(),
@@ -199,12 +265,13 @@ class BullseyeSystemInfo:
                 'storage_total': storage_info[1] if len(storage_info) > 1 else "Unknown",
                 'storage_used': storage_info[2] if len(storage_info) > 2 else "Unknown",
                 'storage_available': storage_info[3] if len(storage_info) > 3 else "Unknown",
-                'armbian_version': armbian_info.get('VERSION', '20.05'),
+                'armbian_version': armbian_info.get('VERSION', 'Unknown'),
                 'armbian_branch': armbian_info.get('BRANCH', 'current'),
                 'board_name': armbian_info.get('BOARD', 'HG680P'),
+                'base_os': armbian_info.get('BASE_OS', 'bullseye'),
                 'gui_available': gui_available,
-                'desktop_env': BullseyeSystemInfo.detect_desktop_environment(),
-                'gui_type': 'Built-in Armbian GUI' if gui_available else 'CLI Only'
+                'desktop_env': ArmbianSystemInfo.detect_desktop_environment(),
+                'auth_method': auth_method
             }
         except Exception as e:
             logger.warning(f"Could not get system info: {e}")
@@ -215,12 +282,13 @@ class BullseyeSystemInfo:
                 'storage_total': "Unknown",
                 'storage_used': "Unknown", 
                 'storage_available': "Unknown",
-                'armbian_version': '20.05',
+                'armbian_version': 'Unknown',
                 'armbian_branch': 'current',
                 'board_name': 'HG680P',
-                'gui_available': True,  # Assume GUI available on Armbian 20.05
-                'desktop_env': 'Built-in Armbian GUI',
-                'gui_type': 'Built-in Armbian GUI'
+                'base_os': 'bullseye',
+                'gui_available': True,
+                'desktop_env': 'Built-in GUI',
+                'auth_method': 'credentials_file'
             }
 
 class ChannelSubscriptionCheck:
@@ -289,26 +357,38 @@ async def check_subscription(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     return True
 
-class GoogleDriveManager:
-    """Enhanced Google Drive manager for Bullseye with built-in GUI support"""
+class MultiVersionGoogleDriveManager:
+    """Multi-version Google Drive manager with different auth methods"""
 
     def __init__(self):
         self.service = None
         self.credentials = None
+        self.system_info = ArmbianSystemInfo.get_system_info()
+        self.auth_method = self.system_info['auth_method']
         self.load_credentials()
 
     def load_credentials(self):
-        """Load existing credentials"""
+        """Load credentials based on OS version"""
         try:
             if os.path.exists(TOKEN_FILE):
                 with open(TOKEN_FILE, 'r') as f:
                     token_data = json.load(f)
 
+                # Different credential loading based on auth method
+                if self.auth_method == 'env_tokens':
+                    # Bookworm: Use env tokens
+                    client_id = GOOGLE_CLIENT_ID
+                    client_secret = GOOGLE_CLIENT_SECRET
+                else:
+                    # Bullseye: Use credentials.json file
+                    client_id = token_data.get('client_id') or GOOGLE_CLIENT_ID
+                    client_secret = token_data.get('client_secret') or GOOGLE_CLIENT_SECRET
+
                 self.credentials = Credentials(
                     token=token_data.get('token'),
                     refresh_token=token_data.get('refresh_token'),
-                    client_id=GOOGLE_CLIENT_ID,
-                    client_secret=GOOGLE_CLIENT_SECRET,
+                    client_id=client_id,
+                    client_secret=client_secret,
                     token_uri='https://oauth2.googleapis.com/token',
                     scopes=SCOPES
                 )
@@ -319,21 +399,44 @@ class GoogleDriveManager:
 
                 if self.credentials.valid:
                     self.service = build('drive', 'v3', credentials=self.credentials, cache_discovery=False)
-                    logger.info("✅ Google Drive authenticated successfully")
+                    logger.info(f"✅ Google Drive authenticated ({self.auth_method})")
 
         except Exception as e:
             logger.warning(f"Could not load credentials: {e}")
 
     def create_credentials_json(self):
-        """Create credentials.json for Bullseye"""
-        if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
-            logger.error("Google credentials not configured")
-            return False
+        """Create credentials.json based on auth method"""
+        if self.auth_method == 'env_tokens':
+            # Bookworm: Must use env variables
+            if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+                logger.error("Bookworm: GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET required in env")
+                return False
+
+            client_id = GOOGLE_CLIENT_ID
+            client_secret = GOOGLE_CLIENT_SECRET
+        else:
+            # Bullseye: Use credentials.json file or fallback to env
+            try:
+                if os.path.exists(CREDENTIALS_FILE):
+                    with open(CREDENTIALS_FILE, 'r') as f:
+                        cred_data = json.load(f)
+                        client_id = cred_data['installed']['client_id']
+                        client_secret = cred_data['installed']['client_secret']
+                else:
+                    # Fallback to env for Bullseye
+                    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+                        logger.error("Bullseye: credentials.json not found and env vars not set")
+                        return False
+                    client_id = GOOGLE_CLIENT_ID
+                    client_secret = GOOGLE_CLIENT_SECRET
+            except Exception as e:
+                logger.error(f"Bullseye credentials error: {e}")
+                return False
 
         credentials_data = {
             "installed": {
-                "client_id": GOOGLE_CLIENT_ID,
-                "client_secret": GOOGLE_CLIENT_SECRET,
+                "client_id": client_id,
+                "client_secret": client_secret,
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
                 "redirect_uris": ["http://localhost:8080", "urn:ietf:wg:oauth:2.0:oob"]
@@ -344,21 +447,19 @@ class GoogleDriveManager:
             os.makedirs(os.path.dirname(CREDENTIALS_FILE), exist_ok=True)
             with open(CREDENTIALS_FILE, 'w') as f:
                 json.dump(credentials_data, f, indent=2)
-            logger.info("✅ Credentials file created for Bullseye")
+            logger.info(f"✅ Credentials file created ({self.auth_method})")
             return True
         except Exception as e:
             logger.error(f"Failed to create credentials file: {e}")
             return False
 
     def get_auth_url(self):
-        """Get OAuth2 authorization URL optimized for Bullseye"""
+        """Get OAuth2 authorization URL for multi-version"""
         try:
             if not self.create_credentials_json():
-                return None, "Could not create credentials file. Check Google credentials in .env"
+                return None, f"Could not create credentials file for {self.auth_method}"
 
             flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
-
-            # For Bullseye, use proper redirect URI configuration
             flow.redirect_uri = "http://localhost:8080"
 
             auth_url, _ = flow.authorization_url(
@@ -369,7 +470,7 @@ class GoogleDriveManager:
 
             self._flow = flow
 
-            logger.info("✅ Authorization URL generated for Bullseye")
+            logger.info(f"✅ Authorization URL generated ({self.auth_method})")
             return auth_url, None
 
         except Exception as e:
@@ -377,25 +478,19 @@ class GoogleDriveManager:
             return None, f"Auth URL generation failed: {str(e)}"
 
     def authenticate_with_code(self, auth_code):
-        """Complete authentication with code for Bullseye"""
+        """Complete authentication with code"""
         try:
             if not hasattr(self, '_flow') or self._flow is None:
                 return False, "No active authentication flow. Please use /auth first."
 
-            # Clean the authorization code
             auth_code = auth_code.strip()
-
-            # Exchange code for credentials
             self._flow.fetch_token(code=auth_code)
             self.credentials = self._flow.credentials
 
-            # Save credentials
             self.save_credentials()
-
-            # Initialize service
             self.service = build('drive', 'v3', credentials=self.credentials, cache_discovery=False)
 
-            logger.info("✅ Authentication completed for Bullseye")
+            logger.info(f"✅ Authentication completed ({self.auth_method})")
             return True, None
 
         except Exception as e:
@@ -403,14 +498,15 @@ class GoogleDriveManager:
             return False, f"Authentication failed: {str(e)}"
 
     def save_credentials(self):
-        """Save credentials securely"""
+        """Save credentials with multi-version support"""
         try:
             token_data = {
                 'token': self.credentials.token,
                 'refresh_token': self.credentials.refresh_token,
                 'client_id': self.credentials.client_id,
                 'client_secret': self.credentials.client_secret,
-                'scopes': self.credentials.scopes
+                'scopes': self.credentials.scopes,
+                'auth_method': self.auth_method
             }
 
             os.makedirs(os.path.dirname(TOKEN_FILE), exist_ok=True)
@@ -418,7 +514,7 @@ class GoogleDriveManager:
                 json.dump(token_data, f, indent=2)
 
             os.chmod(TOKEN_FILE, 0o600)
-            logger.info("💾 Credentials saved securely")
+            logger.info(f"💾 Credentials saved ({self.auth_method})")
 
         except Exception as e:
             logger.error(f"Save credentials failed: {e}")
@@ -484,7 +580,7 @@ class GoogleDriveManager:
             return None, None
 
 class AnyDeskManager:
-    """AnyDesk integration for Bullseye built-in GUI remote access"""
+    """AnyDesk integration with multi-version OS support"""
 
     @staticmethod
     def is_anydesk_installed():
@@ -519,8 +615,8 @@ class AnyDeskManager:
             return "unknown"
 
 # Global instances
-drive_manager = GoogleDriveManager()
-stb_info = BullseyeSystemInfo()
+drive_manager = MultiVersionGoogleDriveManager()
+stb_info = ArmbianSystemInfo()
 
 # Helper functions
 def is_owner(username):
@@ -528,7 +624,7 @@ def is_owner(username):
 
 # Bot commands
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Start command optimized for Armbian built-in GUI"""
+    """Start command with multi-version OS support"""
     if not await check_subscription(update, context):
         return
 
@@ -543,10 +639,12 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if anydesk_id:
             owner_note += f"\n🖥️ **AnyDesk ID:** `{anydesk_id}`"
 
+    auth_method_info = "🔑 **Auth Method:** " + ("Environment Tokens (Bookworm)" if system_info['auth_method'] == 'env_tokens' else "Credentials File (Bullseye)")
+
     message = f"""
 🎉 Welcome {user.first_name}!
 
-🚀 **STB Telegram Bot - HG680P Armbian 20.05 Bullseye**
+🚀 **STB Telegram Bot - HG680P Multi-Version Support**
 📢 **Subscribed to {REQUIRED_CHANNEL}** ✅
 🔧 **Enhanced with JMDKH Features**
 
@@ -556,8 +654,10 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 💾 Storage: {system_info['storage_available']} free
 📺 Board: {system_info['board_name']}
 🐧 Armbian: {system_info['armbian_version']} ({system_info['armbian_branch']})
-🖥️ GUI: {"✅ " + system_info['gui_type'] if system_info['gui_available'] else "❌ Not available"}
+🐛 Base OS: {system_info['base_os'].title()}
+🖥️ GUI: {"✅ " + system_info['desktop_env'] if system_info['gui_available'] else "❌ Not available"}
 🔗 AnyDesk: {"✅ Active" if anydesk_status == "active" else "❌ Inactive"}
+{auth_method_info}
 
 📋 **Available Commands:**
 /auth - Connect Google Drive
@@ -569,91 +669,29 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 /stats - Bot statistics
 /help - Complete help
 
-🎯 **Bullseye Built-in GUI Features:**
-• ✅ Uses Armbian built-in GUI (no extra desktop install)
-• ✅ AnyDesk remote access support
+🎯 **Multi-Version Features:**
+• ✅ Armbian 20.11 Bullseye support
+• ✅ Armbian 25.11 Bookworm support
+• ✅ OS-specific authentication methods
+• ✅ AnyDesk with dependency fixing
 • ✅ Torrent & Magnet link support
 • ✅ Google Drive cloning
 • ✅ Multi-server download support
-• ✅ ARM64 Bullseye optimization
 • ✅ Channel subscription protection
 
 💡 **Supported Services:**
 📥 **Downloads:** Mega, MediaFire, Pixeldrain, Anonfiles, GoFile, etc.
 🧲 **Torrents:** Magnet links, .torrent files
 ☁️ **Google Drive:** Clone, upload, mirror
-🖥️ **Remote Access:** AnyDesk integration with built-in GUI
+🖥️ **Remote Access:** AnyDesk integration
 
 {owner_note}
 """
 
     await update.message.reply_text(message, parse_mode='Markdown')
 
-async def anydesk_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """AnyDesk information command optimized for built-in GUI"""
-    if not await check_subscription(update, context):
-        return
-
-    system_info = stb_info.get_system_info()
-    anydesk_installed = AnyDeskManager.is_anydesk_installed()
-    anydesk_id = AnyDeskManager.get_anydesk_id()
-    anydesk_status = AnyDeskManager.get_anydesk_status()
-
-    if anydesk_installed:
-        message = f"""
-🖥️ **AnyDesk Remote Access - STB HG680P**
-
-📢 **Channel:** {REQUIRED_CHANNEL} ✅
-
-🔧 **AnyDesk Information:**
-• Status: {"✅ Active" if anydesk_status == "active" else "❌ Inactive"}
-• AnyDesk ID: `{anydesk_id if anydesk_id else "Not available"}`
-• Service: {anydesk_status}
-
-💻 **System Information:**
-• Board: {system_info['board_name']}
-• Armbian: {system_info['armbian_version']} Bullseye
-• GUI Type: {system_info['gui_type']}
-• Desktop Environment: {system_info['desktop_env']}
-• Architecture: {system_info['architecture']}
-
-🔗 **Remote Access:**
-{"✅ Ready for remote connection to built-in GUI" if anydesk_id and anydesk_status == "active" else "❌ AnyDesk not properly configured"}
-
-💡 **Instructions:**
-1. Use AnyDesk client on your computer
-2. Connect to ID: `{anydesk_id if anydesk_id else "ID not available"}`
-3. Remote access to STB built-in GUI
-
-⚠️ **Note:** 
-• Uses Armbian 20.05 built-in GUI interface
-• No additional desktop environment installed
-• Lightweight and optimized for STB
-"""
-    else:
-        message = f"""
-🖥️ **AnyDesk Remote Access - STB HG680P**
-
-❌ **AnyDesk Not Installed**
-
-📦 **To install AnyDesk:**
-1. Run setup script: `sudo ./setup.sh`
-2. AnyDesk will be installed automatically
-3. Service will be configured for remote access
-
-💻 **Current System:**
-• Board: {system_info['board_name']}
-• Armbian: {system_info['armbian_version']} Bullseye
-• GUI Type: {system_info['gui_type']}
-• Desktop Environment: {system_info['desktop_env']}
-
-📢 **Channel:** {REQUIRED_CHANNEL} ✅
-"""
-
-    await update.message.reply_text(message, parse_mode='Markdown')
-
 async def system_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Enhanced system information for Bullseye built-in GUI"""
+    """Enhanced system information with multi-version support"""
     if not await check_subscription(update, context):
         return
 
@@ -677,7 +715,7 @@ async def system_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         load_avg = (0, 0, 0)
 
     message = f"""
-💻 **STB HG680P System Information - Bullseye Built-in GUI**
+💻 **STB HG680P Multi-Version System Information**
 
 📢 **Channel:** {REQUIRED_CHANNEL} ✅
 🆔 **Channel ID:** {CHANNEL_ID}
@@ -694,15 +732,14 @@ async def system_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 • Used: {system_info['storage_used']}
 • Available: {system_info['storage_available']}
 
-🐧 **Armbian Information:**
+🐧 **Multi-Version Armbian Information:**
 • Version: {system_info['armbian_version']}
 • Branch: {system_info['armbian_branch']}
-• Base: Debian Bullseye
-• Type: Built-in GUI + CLI
+• Base OS: {system_info['base_os'].title()}
+• Auth Method: {system_info['auth_method'].replace('_', ' ').title()}
 
 🖥️ **GUI Environment:**
 • GUI Available: {"✅ Yes" if system_info['gui_available'] else "❌ No"}
-• GUI Type: {system_info['gui_type']}
 • Desktop: {system_info['desktop_env']}
 • Display: {os.environ.get('DISPLAY', 'Not set')}
 
@@ -725,64 +762,91 @@ async def system_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 • GDrive Clone: ✅ Active
 • Direct Mirror: ✅ Active
 
-**🚀 STB optimized for Armbian 20.05 Bullseye built-in GUI**
+**🚀 Multi-version STB optimized for HG680P**
 """
 
     await update.message.reply_text(message, parse_mode='Markdown')
 
-# Enhanced auth command with Bullseye optimization
 async def auth_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Enhanced Google Drive authentication for Bullseye built-in GUI"""
+    """Multi-version Google Drive authentication"""
     if not await check_subscription(update, context):
         return
 
-    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
-        await update.message.reply_text(
-            "⚙️ **Google Drive Not Configured**\n\n"
-            "❌ GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET not set\n"
-            "Please configure environment variables in .env file\n\n"
-            "**Bullseye Setup Instructions:**\n"
-            "1. Go to Google Cloud Console\n"
-            "2. Create OAuth 2.0 Client ID (Desktop Application)\n"
-            "3. Add Client ID and Secret to .env file\n"
-            "4. Restart the bot",
-            parse_mode='Markdown'
-        )
-        return
+    system_info = stb_info.get_system_info()
+    auth_method = system_info['auth_method']
+    base_os = system_info['base_os']
+
+    if auth_method == 'env_tokens':
+        # Bookworm method
+        if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+            await update.message.reply_text(
+                "⚙️ **Google Drive Not Configured (Bookworm)**\n\n"
+                "❌ GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET not set\n"
+                "For Armbian 25.11 Bookworm, configure environment variables:\n\n"
+                "**Bookworm Setup Instructions:**\n"
+                "1. Go to Google Cloud Console\n"
+                "2. Create OAuth 2.0 Client ID (Desktop Application)\n"
+                "3. Add Client ID and Secret to .env file\n"
+                "4. Restart the bot\n\n"
+                "🔧 **Note:** Bookworm uses environment token method",
+                parse_mode='Markdown'
+            )
+            return
+    else:
+        # Bullseye method
+        if not os.path.exists(CREDENTIALS_FILE) and (not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET):
+            await update.message.reply_text(
+                "⚙️ **Google Drive Not Configured (Bullseye)**\n\n"
+                "❌ credentials.json not found and env variables not set\n"
+                "For Armbian 20.11 Bullseye, use credentials.json file:\n\n"
+                "**Bullseye Setup Instructions:**\n"
+                "1. Go to Google Cloud Console\n"
+                "2. Create OAuth 2.0 Client ID (Desktop Application)\n"
+                "3. Download credentials.json to /app/credentials/\n"
+                "4. OR set GOOGLE_CLIENT_ID/SECRET in .env\n"
+                "5. Restart the bot\n\n"
+                "🔧 **Note:** Bullseye supports both credentials.json and env tokens",
+                parse_mode='Markdown'
+            )
+            return
 
     if drive_manager.service:
         await update.message.reply_text(
-            "✅ **Already Connected to Google Drive**\n\n"
-            "Your Google Drive is active and ready.\n"
-            "Try using: `/d [link]` to mirror files",
+            f"✅ **Already Connected to Google Drive**\n\n"
+            f"Your Google Drive is active and ready.\n"
+            f"**Auth Method:** {auth_method.replace('_', ' ').title()}\n"
+            f"**Base OS:** {base_os.title()}\n"
+            f"Try using: `/d [link]` to mirror files",
             parse_mode='Markdown'
         )
         return
 
-    system_info = stb_info.get_system_info()
     auth_url, error = drive_manager.get_auth_url()
 
     if error:
         await update.message.reply_text(
             f"❌ **Authentication Setup Failed**\n\n"
             f"**Error:** {error}\n\n"
-            "**Troubleshooting for Bullseye:**\n"
-            "• Check GOOGLE_CLIENT_ID is valid\n"
-            "• Check GOOGLE_CLIENT_SECRET is valid\n"
+            f"**OS:** {base_os.title()} ({auth_method})\n\n"
+            "**Troubleshooting:**\n"
+            "• Check Google credentials configuration\n"
             "• Verify Google Cloud Console settings\n"
-            "• Ensure redirect URI is correct",
+            "• Ensure correct auth method for your OS",
             parse_mode='Markdown'
         )
         return
 
     gui_note = ""
     if system_info['gui_available']:
-        gui_note = f"\n\n**🖥️ Built-in GUI Available:**\nYou can open the link in the built-in browser via AnyDesk remote access if preferred.\n**GUI Type:** {system_info['gui_type']}"
+        gui_note = f"\n\n**🖥️ GUI Available:**\nYou can open the link in built-in browser via AnyDesk if preferred."
 
     message = f"""
-🔐 **Google Drive Authentication - Armbian 20.05 Bullseye**
+🔐 **Google Drive Authentication - Multi-Version Support**
 
 **📋 STB HG680P Setup Instructions:**
+
+**🐛 Detected OS:** {base_os.title()}
+**🔑 Auth Method:** {auth_method.replace('_', ' ').title()}
 
 1️⃣ **Open this link on any device with browser:**
 {auth_url}
@@ -795,24 +859,24 @@ async def auth_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 **💡 Example:**
 `/code 4/0AdQt8qi7bGMqwertyuiop...`
 
-**⚠️ Bullseye Built-in GUI Notes:**
-• Optimized for Armbian 20.05 built-in GUI
-• No external browser needed on STB
-• Use any device to get authorization code
+**⚠️ Multi-Version Notes:**
+• Optimized for {base_os.title()} authentication
+• {auth_method.replace('_', ' ').title()} method used
 • Code expires in 10 minutes
-• ARM64 architecture optimized{gui_note}
+• ARM64 architecture compatible{gui_note}
 
-**🔒 Secure authentication for STB HG680P Bullseye**
+**🔒 Secure multi-version authentication for STB HG680P**
 """
 
     await update.message.reply_text(message, parse_mode='Markdown')
 
 async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle Google Drive authorization code for Bullseye"""
+    """Handle Google Drive authorization code for multi-version"""
     if not await check_subscription(update, context):
         return
 
     if not context.args:
+        system_info = stb_info.get_system_info()
         await update.message.reply_text(
             "⚠️ **Invalid Format**\n\n"
             "Please use: `/code [your-authorization-code]`\n\n"
@@ -821,63 +885,65 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "2. Open the provided link\n"
             "3. Complete Google authorization\n"
             "4. Copy the code and use `/code [code]`\n\n"
-            "**Bullseye Note:** Ensure complete code is copied",
+            f"**{system_info['base_os'].title()} Note:** Ensure complete code is copied",
             parse_mode='Markdown'
         )
         return
 
     auth_code = ' '.join(context.args)
+    system_info = stb_info.get_system_info()
 
-    msg = await update.message.reply_text("🔄 **Processing Bullseye Authentication...**")
+    msg = await update.message.reply_text(f"🔄 **Processing {system_info['base_os'].title()} Authentication...**")
 
     success, error = drive_manager.authenticate_with_code(auth_code)
 
     if success:
         await msg.edit_text(
             "✅ **Google Drive Connected Successfully!**\n\n"
-            "🚀 STB HG680P Bullseye is now connected to Google Drive\n"
+            f"🚀 STB HG680P {system_info['base_os'].title()} connected to Google Drive\n"
+            f"🔑 **Auth Method:** {system_info['auth_method'].replace('_', ' ').title()}\n"
             "📁 Ready for enhanced operations:\n\n"
             "📥 **Mirror:** `/d [link]`\n"
             "🧲 **Torrent:** `/t [magnet/torrent]`\n"
             "☁️ **Clone:** `/dc [gdrive_link]`\n\n"
-            "🎉 All JMDKH features now available on Bullseye built-in GUI!",
+            f"🎉 All JMDKH features now available on {system_info['base_os'].title()}!",
             parse_mode='Markdown'
         )
     else:
         await msg.edit_text(
             f"❌ **Authentication Failed**\n\n"
             f"**Error:** {error}\n\n"
-            "**Bullseye Troubleshooting:**\n"
+            f"**{system_info['base_os'].title()} Troubleshooting:**\n"
             "• Get fresh code with `/auth`\n"
             "• Ensure complete code is copied\n"
             "• Try again with proper permissions\n"
             "• Check Google Cloud Console settings\n"
-            "• Verify redirect URI configuration",
+            f"• Verify {system_info['auth_method']} configuration",
             parse_mode='Markdown'
         )
 
-# Include all other JMDKH commands here (torrent, mirror, clone, etc.)
-# [Previous JMDKH implementations would go here - same as before]
+# Include other JMDKH commands (torrent, mirror, clone, etc.) here
+# [Previous JMDKH implementations would go here]
 
 def main():
-    """Main bot function optimized for Bullseye built-in GUI"""
+    """Main bot function with multi-version support"""
     if not BOT_TOKEN or BOT_TOKEN == 'your_bot_token_here':
         logger.error("❌ BOT_TOKEN not configured properly")
         sys.exit(1)
 
     system_info = stb_info.get_system_info()
 
-    logger.info("🚀 Starting STB Telegram Bot for Armbian 20.05 Bullseye...")
-    logger.info(f"🌟 JMDKH Features + Built-in GUI support")
-    logger.info(f"🖥️ GUI Type: {system_info['gui_type']}")
+    logger.info("🚀 Starting Multi-Version STB Telegram Bot...")
+    logger.info(f"🌟 JMDKH Features + Multi-OS support")
     logger.info(f"🤖 Bot Token: {BOT_TOKEN[:20]}...")
     logger.info(f"📢 Required Channel: {REQUIRED_CHANNEL}")
     logger.info(f"🆔 Channel ID: {CHANNEL_ID}")
     logger.info(f"📱 STB Model: HG680P")
-    logger.info(f"🐧 Armbian: {system_info['armbian_version']} Bullseye")
+    logger.info(f"🐧 Armbian: {system_info['armbian_version']}")
+    logger.info(f"🐛 Base OS: {system_info['base_os'].title()}")
     logger.info(f"🏗️ Architecture: {system_info['architecture']}")
     logger.info(f"🖥️ GUI Available: {system_info['gui_available']}")
-    logger.info(f"🖥️ Desktop: {system_info['desktop_env']}")
+    logger.info(f"🔑 Auth Method: {system_info['auth_method']}")
     logger.info(f"👑 Owner: @{OWNER_USERNAME}")
 
     # Create Telegram application
@@ -888,11 +954,9 @@ def main():
     app.add_handler(CommandHandler("auth", auth_command))
     app.add_handler(CommandHandler("code", code_command))
     app.add_handler(CommandHandler("system", system_command))
-    app.add_handler(CommandHandler("anydesk", anydesk_command))
 
-    logger.info("✅ STB Bot initialization complete for Bullseye built-in GUI!")
-    logger.info("🔗 Ready for built-in GUI operation on HG680P")
-    logger.info("🖥️ AnyDesk remote access with built-in GUI supported")
+    logger.info("✅ Multi-Version STB Bot initialization complete!")
+    logger.info("🔗 Ready for multi-OS operation on HG680P")
 
     # Start the bot
     app.run_polling(drop_pending_updates=True)

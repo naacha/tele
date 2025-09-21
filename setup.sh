@@ -1,5 +1,5 @@
 #!/bin/bash
-# STB HG680P Setup Script for Armbian 20.05 Bullseye - Uses Built-in GUI
+# Multi-Version STB HG680P Setup Script - Armbian 20.11 Bullseye & 25.11 Bookworm
 
 set -e
 
@@ -11,9 +11,9 @@ CYAN='\033[0;36m'
 PURPLE='\033[0;35m'
 NC='\033[0m'
 
-echo -e "${CYAN}🚀 STB HG680P Setup for Armbian 20.05 Bullseye${NC}"
-echo -e "${CYAN}================================================${NC}"
-echo -e "${PURPLE}🖥️ Using Built-in GUI + AnyDesk Integration${NC}"
+echo -e "${CYAN}🚀 Multi-Version STB HG680P Setup${NC}"
+echo -e "${CYAN}====================================${NC}"
+echo -e "${PURPLE}🖥️ Support: Armbian 20.11 Bullseye & 25.11 Bookworm${NC}"
 echo ""
 
 # Check if running as root
@@ -22,277 +22,412 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# Detect Armbian version
-if [ -f "/etc/armbian-release" ]; then
-    source /etc/armbian-release
-    echo -e "${BLUE}📱 Detected Armbian: $VERSION ($BRANCH)${NC}"
-    echo -e "${BLUE}📱 Board: $BOARD${NC}"
+# Function to fix GPG key errors
+fix_gpg_keys() {
+    echo -e "${BLUE}🔑 Fixing GPG key errors...${NC}"
+
+    # Add missing Debian archive keys
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E98404D386FA1D9 2>/dev/null || true
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6ED0E7B82643E131 2>/dev/null || true  
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 605C66F00D6C9793 2>/dev/null || true
+
+    # Update sources.list to use current repos if using archive
+    if grep -q "archive.debian.org" /etc/apt/sources.list; then
+        echo -e "${YELLOW}⚠️ Detected archive.debian.org, updating to current repos...${NC}"
+
+        # Create backup
+        cp /etc/apt/sources.list /etc/apt/sources.list.backup
+
+        # Update to current repos based on detected version
+        if [ -f "/etc/armbian-release" ]; then
+            source /etc/armbian-release 2>/dev/null || true
+        fi
+
+        # Detect Debian version
+        DEBIAN_VERSION=$(lsb_release -cs 2>/dev/null || echo "bullseye")
+
+        if [ "$DEBIAN_VERSION" = "bookworm" ]; then
+            # Bookworm sources
+            cat > /etc/apt/sources.list << EOF
+deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
+
+deb http://deb.debian.org/debian-security/ bookworm-security main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian-security/ bookworm-security main contrib non-free non-free-firmware
+
+deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
+EOF
+        else
+            # Bullseye sources
+            cat > /etc/apt/sources.list << EOF
+deb http://deb.debian.org/debian bullseye main contrib non-free
+deb-src http://deb.debian.org/debian bullseye main contrib non-free
+
+deb http://deb.debian.org/debian-security/ bullseye-security main contrib non-free
+deb-src http://deb.debian.org/debian-security/ bullseye-security main contrib non-free
+
+deb http://deb.debian.org/debian bullseye-updates main contrib non-free
+deb-src http://deb.debian.org/debian bullseye-updates main contrib non-free
+
+deb http://deb.debian.org/debian bullseye-backports main contrib non-free
+deb-src http://deb.debian.org/debian bullseye-backports main contrib non-free
+EOF
+        fi
+
+        echo -e "${GREEN}✅ Updated sources.list for $DEBIAN_VERSION${NC}"
+    fi
+
+    # Clean package cache and update
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+    echo -e "${GREEN}✅ GPG keys and repositories fixed${NC}"
+}
+
+# Function to fix broken packages
+fix_broken_packages() {
+    echo -e "${BLUE}🔧 Fixing broken packages...${NC}"
+
+    # Fix broken install
+    apt --fix-broken install -y
+
+    # Configure any pending packages
+    dpkg --configure -a
+
+    # Clean up
+    apt-get autoremove -y
+    apt-get autoclean
+
+    echo -e "${GREEN}✅ Broken packages fixed${NC}"
+}
+
+# Detect Armbian version and base OS
+detect_os_version() {
+    DETECTED_VERSION="Unknown"
+    DETECTED_BASE="bullseye"
+    DETECTED_BOARD="HG680P"
+
+    if [ -f "/etc/armbian-release" ]; then
+        source /etc/armbian-release
+        DETECTED_VERSION="$VERSION"
+        DETECTED_BOARD="$BOARD"
+
+        # Determine base OS from version
+        if [[ "$VERSION" == *"20.11"* ]] || [[ "$VERSION" == *"bullseye"* ]]; then
+            DETECTED_BASE="bullseye"
+        elif [[ "$VERSION" == *"25.11"* ]] || [[ "$VERSION" == *"bookworm"* ]]; then
+            DETECTED_BASE="bookworm"
+        fi
+    fi
+
+    # Double-check with lsb_release
+    if command -v lsb_release &> /dev/null; then
+        LSB_CODENAME=$(lsb_release -cs 2>/dev/null || echo "")
+        if [ -n "$LSB_CODENAME" ]; then
+            if [ "$LSB_CODENAME" = "bookworm" ] || [ "$LSB_CODENAME" = "bullseye" ]; then
+                DETECTED_BASE="$LSB_CODENAME"
+            fi
+        fi
+    fi
+
+    echo -e "${BLUE}📱 Detected System:${NC}"
+    echo "Armbian Version: $DETECTED_VERSION"
+    echo "Base OS: $DETECTED_BASE"
+    echo "Board: $DETECTED_BOARD"
+    echo "Architecture: $(uname -m)"
     echo ""
-else
-    echo -e "${YELLOW}⚠️ Warning: Could not detect Armbian version${NC}"
-fi
+}
 
-# Check architecture
-if [[ $(uname -m) != "aarch64" ]]; then
-    echo -e "${YELLOW}⚠️ Warning: Optimized for ARM64/aarch64 architecture${NC}"
-fi
+# Function to install AnyDesk with dependency fixing
+install_anydesk_with_deps() {
+    local base_os="$1"
 
-echo -e "${BLUE}📱 System Information:${NC}"
-echo "Architecture: $(uname -m)"
-echo "OS: $(uname -s)"
-echo "Kernel: $(uname -r)"
-echo "Distribution: $(lsb_release -d 2>/dev/null | cut -f2 || echo 'Unknown')"
-echo ""
+    echo -e "${PURPLE}🖥️ Installing AnyDesk with dependency fixing for $base_os...${NC}"
 
-# Check for built-in GUI
-if [ -n "$DISPLAY" ] || pgrep -x "Xorg" > /dev/null || pgrep -x "lightdm" > /dev/null; then
-    echo -e "${GREEN}✅ Built-in GUI detected and active${NC}"
-    GUI_AVAILABLE=true
-else
-    echo -e "${YELLOW}⚠️ Built-in GUI not currently running${NC}"
-    GUI_AVAILABLE=false
-fi
+    # Install required dependencies first
+    echo -e "${BLUE}📦 Installing AnyDesk dependencies...${NC}"
 
-# Detect desktop environment  
-DE_DETECTED="None"
-if pgrep -x "lxsession" > /dev/null; then
-    DE_DETECTED="LXDE (Built-in)"
-elif pgrep -x "openbox" > /dev/null; then
-    DE_DETECTED="Openbox (Built-in)"  
-elif pgrep -x "xfce4-session" > /dev/null; then
-    DE_DETECTED="XFCE4"
-elif pgrep -x "Xorg" > /dev/null; then
-    DE_DETECTED="Minimal GUI (Built-in)"
-fi
+    if [ "$base_os" = "bookworm" ]; then
+        # Bookworm dependencies
+        apt-get install -y \
+            libgtkglext1-dev \
+            libgtkglext1 \
+            libglib2.0-0 \
+            libgtk2.0-0 \
+            libgtk2.0-dev \
+            libx11-6 \
+            libxext6 \
+            libxfixes3 \
+            libxrandr2 \
+            libasound2-dev \
+            libpulse-dev \
+            || true
+    else
+        # Bullseye dependencies
+        apt-get install -y \
+            libgtkglext1 \
+            libgtkglext1-dev \
+            libglib2.0-0 \
+            libgtk2.0-0 \
+            libgtk2.0-dev \
+            libx11-6 \
+            libxext6 \
+            libxfixes3 \
+            libxrandr2 \
+            libasound2 \
+            libpulse0 \
+            || true
+    fi
 
-echo -e "${PURPLE}🖥️ GUI Information:${NC}"
-echo "Built-in GUI: ${GUI_AVAILABLE}"
-echo "Desktop Environment: ${DE_DETECTED}"
-echo "Display: ${DISPLAY:-'Not set'}"
-echo ""
+    # Add AnyDesk repository key
+    echo -e "${BLUE}🔑 Adding AnyDesk repository key...${NC}"
+    wget -qO - https://keys.anydesk.com/repos/DEB-GPG-KEY | apt-key add - || true
 
-# Stop existing Docker containers
-echo -e "${BLUE}🛑 Stopping existing containers...${NC}"
-docker stop telegram-bot-stb-bullseye aria2-stb-bullseye 2>/dev/null || true
-docker rm -f telegram-bot-stb-bullseye aria2-stb-bullseye 2>/dev/null || true
+    # Add AnyDesk repository
+    echo "deb http://deb.anydesk.com/ all main" > /etc/apt/sources.list.d/anydesk-stable.list
 
-# Clean Docker system
-echo -e "${BLUE}🧹 Cleaning Docker system...${NC}"
-docker system prune -f 2>/dev/null || true
+    # Update package list
+    apt-get update || true
 
-echo -e "${GREEN}✅ Docker cleanup completed${NC}"
+    # Try to install AnyDesk
+    if apt-get install -y anydesk; then
+        echo -e "${GREEN}✅ AnyDesk installed successfully${NC}"
 
-# Update system packages for Bullseye
-echo -e "${BLUE}📦 Updating Armbian Bullseye system packages...${NC}"
-apt-get update -y
-apt-get upgrade -y
+        # Enable AnyDesk service
+        systemctl enable anydesk 2>/dev/null || true
+        systemctl start anydesk 2>/dev/null || true
 
-# Install base dependencies for Bullseye
-echo -e "${BLUE}📦 Installing base dependencies for Bullseye...${NC}"
-apt-get install -y \
-    curl \
-    wget \
-    gnupg \
-    lsb-release \
-    ca-certificates \
-    apt-transport-https \
-    software-properties-common
+        # Configure unattended access
+        sleep 3
+        anydesk --set-password stbaccess 2>/dev/null || true
 
-# Install Docker for ARM64 if not present
-if ! command -v docker &> /dev/null; then
-    echo -e "${BLUE}🐳 Installing Docker for ARM64 Bullseye...${NC}"
+        # Get AnyDesk ID
+        ANYDESK_ID=$(anydesk --get-id 2>/dev/null || echo "Will be available after restart")
+        echo -e "${PURPLE}🆔 AnyDesk ID: ${ANYDESK_ID}${NC}"
+
+        return 0
+    else
+        echo -e "${YELLOW}⚠️ AnyDesk installation failed, trying alternative method...${NC}"
+
+        # Try with dpkg and force dependencies
+        wget -O /tmp/anydesk.deb https://download.anydesk.com/linux/anydesk_6.2.1-1_arm64.deb 2>/dev/null ||         wget -O /tmp/anydesk.deb https://download.anydesk.com/linux/anydesk_6.1.1-1_arm64.deb 2>/dev/null || true
+
+        if [ -f "/tmp/anydesk.deb" ]; then
+            dpkg -i /tmp/anydesk.deb 2>/dev/null || true
+            apt --fix-broken install -y || true
+
+            if command -v anydesk &> /dev/null; then
+                echo -e "${GREEN}✅ AnyDesk installed via dpkg${NC}"
+                systemctl enable anydesk 2>/dev/null || true
+                systemctl start anydesk 2>/dev/null || true
+                return 0
+            fi
+        fi
+
+        echo -e "${YELLOW}⚠️ AnyDesk installation failed, continuing without remote access${NC}"
+        return 1
+    fi
+}
+
+# Check if Docker is already installed
+check_docker_installed() {
+    if command -v docker &> /dev/null && command -v docker-compose &> /dev/null; then
+        echo -e "${GREEN}✅ Docker and Docker Compose already installed${NC}"
+        echo "Docker version: $(docker --version)"
+        echo "Docker Compose version: $(docker-compose --version)"
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Install Docker for ARM64
+install_docker() {
+    local base_os="$1"
+
+    echo -e "${BLUE}🐳 Installing Docker for ARM64 $base_os...${NC}"
+
+    # Install prerequisites
+    apt-get install -y \
+        apt-transport-https \
+        ca-certificates \
+        curl \
+        gnupg \
+        lsb-release
 
     # Add Docker GPG key
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 
-    # Add Docker repository for ARM64 Bullseye
-    echo "deb [arch=arm64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian bullseye stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+    # Add Docker repository
+    echo "deb [arch=arm64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $base_os stable" | \
+        tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-    # Install Docker
+    # Update and install Docker
     apt-get update
     apt-get install -y docker-ce docker-ce-cli containerd.io
+
+    # Install Docker Compose
+    apt-get install -y python3-pip
+    pip3 install docker-compose
 
     # Enable Docker service
     systemctl enable docker
     systemctl start docker
 
-    echo -e "${GREEN}✅ Docker installed successfully${NC}"
-else
-    echo -e "${GREEN}✅ Docker already installed${NC}"
-fi
+    echo -e "${GREEN}✅ Docker and Docker Compose installed${NC}"
+}
 
-# Install Docker Compose for ARM64
-if ! command -v docker-compose &> /dev/null; then
-    echo -e "${BLUE}📦 Installing Docker Compose for ARM64...${NC}"
+# Stop existing containers
+cleanup_existing_containers() {
+    echo -e "${BLUE}🛑 Cleaning up existing containers...${NC}"
 
-    # Install pip3 if not available
-    apt-get install -y python3-pip
+    # Stop and remove containers
+    docker stop telegram-bot-stb telegram-bot-stb-bullseye telegram-bot-stb-multi aria2-stb aria2-stb-bullseye aria2-stb-multi 2>/dev/null || true
+    docker rm -f telegram-bot-stb telegram-bot-stb-bullseye telegram-bot-stb-multi aria2-stb aria2-stb-bullseye aria2-stb-multi 2>/dev/null || true
 
-    # Install docker-compose via pip
-    pip3 install docker-compose
+    # Clean Docker system
+    docker system prune -f 2>/dev/null || true
 
-    echo -e "${GREEN}✅ Docker Compose installed successfully${NC}"
-else
-    echo -e "${GREEN}✅ Docker Compose already installed${NC}"
-fi
+    echo -e "${GREEN}✅ Container cleanup completed${NC}"
+}
 
-# Install GUI support tools (minimal - work with built-in GUI)
-echo -e "${PURPLE}🖥️ Installing minimal GUI support tools...${NC}"
+# Main setup process
+main_setup() {
+    # Detect OS version
+    detect_os_version
 
-# Install only essential GUI tools that work with built-in GUI
-apt-get install -y \
-    x11-utils \
-    x11-xserver-utils \
-    xauth \
-    mesa-utils
+    # Fix GPG keys and repositories first
+    fix_gpg_keys
 
-# NO DESKTOP ENVIRONMENT INSTALLATION - Use built-in GUI
-echo -e "${GREEN}✅ Using Armbian 20.05 built-in GUI (no additional desktop installation)${NC}"
-echo -e "${PURPLE}🖥️ Built-in GUI detected: ${DE_DETECTED}${NC}"
+    # Update system
+    echo -e "${BLUE}📦 Updating system packages...${NC}"
+    apt-get update || (fix_gpg_keys && apt-get update)
 
-# Install AnyDesk for remote access
-echo -e "${PURPLE}🖥️ Installing AnyDesk for remote access...${NC}"
+    # Fix broken packages
+    fix_broken_packages
 
-# Add AnyDesk repository key
-wget -qO - https://keys.anydesk.com/repos/DEB-GPG-KEY | apt-key add -
+    # Upgrade system
+    apt-get upgrade -y
 
-# Add AnyDesk repository for ARM64
-echo "deb http://deb.anydesk.com/ all main" > /etc/apt/sources.list.d/anydesk-stable.list
+    # Install base dependencies
+    echo -e "${BLUE}📦 Installing base dependencies...${NC}"
+    apt-get install -y \
+        curl \
+        wget \
+        gnupg \
+        lsb-release \
+        ca-certificates \
+        apt-transport-https \
+        software-properties-common \
+        build-essential \
+        python3 \
+        python3-pip
 
-# Update package list
-apt-get update
+    # Check if Docker is already installed
+    if ! check_docker_installed; then
+        install_docker "$DETECTED_BASE"
+    fi
 
-# Install AnyDesk
-if apt-get install -y anydesk; then
-    echo -e "${GREEN}✅ AnyDesk installed successfully${NC}"
+    # Cleanup existing containers
+    cleanup_existing_containers
 
-    # Enable AnyDesk service
-    systemctl enable anydesk
-    systemctl start anydesk
+    # Install minimal GUI support tools
+    echo -e "${PURPLE}🖥️ Installing minimal GUI support tools...${NC}"
+    apt-get install -y \
+        x11-utils \
+        x11-xserver-utils \
+        xauth \
+        mesa-utils \
+        || true
 
-    # Get AnyDesk ID
-    sleep 3  # Wait for service to start
-    ANYDESK_ID=$(anydesk --get-id 2>/dev/null || echo "ID will be available after first start")
-    echo -e "${PURPLE}🆔 AnyDesk ID: ${ANYDESK_ID}${NC}"
+    # Install AnyDesk with dependency fixing
+    install_anydesk_with_deps "$DETECTED_BASE"
 
-else
-    echo -e "${YELLOW}⚠️ AnyDesk installation failed, continuing without remote access${NC}"
-fi
+    # Install enhanced dependencies for JMDKH features
+    echo -e "${BLUE}📦 Installing JMDKH dependencies...${NC}"
+    apt-get install -y \
+        aria2 \
+        ffmpeg \
+        mediainfo \
+        unzip \
+        p7zip-full \
+        git \
+        || true
 
-# Install enhanced dependencies for JMDKH features
-echo -e "${BLUE}📦 Installing enhanced dependencies for JMDKH features...${NC}"
-apt-get install -y \
-    aria2 \
-    ffmpeg \
-    mediainfo \
-    unzip \
-    p7zip-full \
-    curl \
-    wget \
-    git
+    # Create directory structure
+    echo -e "${BLUE}📁 Creating directory structure...${NC}"
+    mkdir -p data downloads logs credentials torrents aria2-config
+    chmod -R 755 data downloads logs credentials torrents aria2-config
 
-# Create enhanced directory structure
-echo -e "${BLUE}📁 Creating enhanced directory structure...${NC}"
-mkdir -p data downloads logs credentials torrents aria2-config
-chmod -R 755 data downloads logs credentials torrents aria2-config
+    # Create environment file
+    if [ ! -f ".env" ]; then
+        echo -e "${BLUE}⚙️ Creating environment configuration...${NC}"
+        cp .env.example .env
 
-# Create environment file with Bullseye defaults
-if [ ! -f ".env" ]; then
-    echo -e "${BLUE}⚙️ Creating Bullseye environment configuration...${NC}"
-    cp .env.example .env
+        # Set base OS specific settings
+        if [ "$DETECTED_BASE" = "bookworm" ]; then
+            echo "ARMBIAN_BASE_OS=bookworm" >> .env
+            echo "AUTH_METHOD=env_tokens" >> .env
+        else
+            echo "ARMBIAN_BASE_OS=bullseye" >> .env  
+            echo "AUTH_METHOD=credentials_file" >> .env
+        fi
 
-    echo -e "${GREEN}📝 Bullseye Credentials Integrated:${NC}"
+        echo "DETECTED_ARMBIAN_VERSION=$DETECTED_VERSION" >> .env
+        echo "DETECTED_BOARD=$DETECTED_BOARD" >> .env
+    fi
+
+    # Set proper permissions
+    echo -e "${BLUE}🔧 Setting permissions...${NC}"
+    chown -R $(logname):$(logname) . 2>/dev/null || chown -R 1000:1000 .
+    chmod +x scripts/*.sh
+
+    # Show system information
+    echo -e "${CYAN}📊 Multi-Version STB Setup Complete${NC}"
+    echo "CPU: $(cat /proc/cpuinfo | grep 'model name' | head -1 | cut -d: -f2 | xargs)"
+    echo "Memory: $(free -h | awk '/^Mem:/ {print $2}') total"
+    echo "Storage: $(df -h / | awk 'NR==2 {print $4}') available"
+    echo "Architecture: $(uname -m)"
+    echo "Detected Armbian: $DETECTED_VERSION"
+    echo "Base OS: $DETECTED_BASE"
+    echo "Board: $DETECTED_BOARD"
     echo ""
-    echo -e "${PURPLE}✅ Bot Token: 8436081597:AAE-8bfWrbvhl26-l9y65p48DfWjQOYPR2A${NC}"
-    echo -e "${PURPLE}✅ Channel ID: -1001802424804 (@ZalheraThink)${NC}"
-    echo -e "${PURPLE}✅ Armbian: 20.05 Bullseye${NC}"
-    echo -e "${PURPLE}✅ GUI Support: Built-in (${DE_DETECTED})${NC}"
-    echo -e "${PURPLE}✅ AnyDesk: ${ANYDESK_ID}${NC}"
+
+    # Show services status
+    echo -e "${CYAN}🔧 Services Status:${NC}"
+    echo "Docker: $(systemctl is-active docker)"
+    if command -v anydesk &> /dev/null; then
+        echo "AnyDesk: $(systemctl is-active anydesk)"
+        echo "AnyDesk ID: $(anydesk --get-id 2>/dev/null || echo 'Will be available after restart')"
+    else
+        echo "AnyDesk: Not installed"
+    fi
+
     echo ""
-    echo -e "${YELLOW}🌟 JMDKH Features Ready:${NC}"
-    echo "• Torrent & Magnet downloads"
-    echo "• Google Drive cloning" 
-    echo "• Multi-server mirroring"
-    echo "• Built-in GUI remote access"
-    echo "• No unnecessary desktop installation"
+    echo -e "${GREEN}✅ Multi-Version STB HG680P setup completed successfully!${NC}"
     echo ""
-    echo -e "${YELLOW}📝 Optional Configuration:${NC}"
-    echo "1. BOT_USERNAME - For inline commands"
-    echo "2. GOOGLE_CLIENT_ID - For Google Drive"
-    echo "3. GOOGLE_CLIENT_SECRET - For Google Drive"
+    echo -e "${CYAN}🎉 Enhanced features ready:${NC}"
+    echo -e "${PURPLE}• Bot Token and Channel ID integrated${NC}"
+    echo -e "${PURPLE}• Multi-version OS support ($DETECTED_BASE)${NC}"
+    echo -e "${PURPLE}• JMDKH features ready${NC}"
+    echo -e "${PURPLE}• Docker deployment ready${NC}"
+    echo -e "${PURPLE}• AnyDesk remote access${NC}"
+    echo -e "${PURPLE}• Error fixing implemented${NC}"
     echo ""
-    echo -e "${BLUE}Edit command: nano .env${NC}"
+    echo -e "${BLUE}📋 Next Steps:${NC}"
+    echo "1. Configure Google credentials in .env"
+    if [ "$DETECTED_BASE" = "bookworm" ]; then
+        echo "   For Bookworm: Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET"
+    else
+        echo "   For Bullseye: Use credentials.json or set env variables"
+    fi
+    echo "2. Start bot: ./start.sh"
+    echo "3. Check logs: ./logs.sh"
+    echo "4. Test commands: /start, /auth, /system"
     echo ""
-fi
+    echo -e "${CYAN}🎉 Your multi-version STB is ready!${NC}"
+}
 
-# Set proper permissions for Bullseye
-echo -e "${BLUE}🔧 Setting Bullseye permissions...${NC}"
-chown -R $(logname):$(logname) . 2>/dev/null || chown -R root:root .
-chmod +x scripts/*.sh
-
-# Configure AnyDesk (if installed)
-if command -v anydesk &> /dev/null; then
-    echo -e "${PURPLE}🔧 Configuring AnyDesk for built-in GUI...${NC}"
-
-    # Set unattended access
-    anydesk --set-password bullseyeaccess 2>/dev/null || true
-
-    # Enable service
-    systemctl enable anydesk 2>/dev/null || true
-    systemctl start anydesk 2>/dev/null || true
-
-    echo -e "${GREEN}✅ AnyDesk configured for built-in GUI remote access${NC}"
-fi
-
-# Show comprehensive system information
-echo -e "${CYAN}📊 Bullseye STB HG680P System Information:${NC}"
-echo "CPU: $(cat /proc/cpuinfo | grep 'model name' | head -1 | cut -d: -f2 | xargs)"
-echo "Memory: $(free -h | awk '/^Mem:/ {print $2}') total"
-echo "Storage: $(df -h / | awk 'NR==2 {print $4}') available"
-echo "Architecture: $(uname -m)"
-
-if [ -f "/etc/armbian-release" ]; then
-    source /etc/armbian-release
-    echo "Armbian Version: $VERSION"
-    echo "Armbian Branch: $BRANCH"
-    echo "Board: $BOARD"
-fi
-
-# Display services status
-echo ""
-echo -e "${CYAN}🔧 Services Status:${NC}"
-echo "Docker: $(systemctl is-active docker)"
-if command -v anydesk &> /dev/null; then
-    echo "AnyDesk: $(systemctl is-active anydesk)"
-    echo "AnyDesk ID: $(anydesk --get-id 2>/dev/null || echo 'Will be available after restart')"
-fi
-
-# Check GUI availability
-echo ""
-echo -e "${PURPLE}🖥️ Built-in GUI Status:${NC}"
-if [ "$GUI_AVAILABLE" = true ]; then
-    echo "GUI: ✅ Built-in GUI active (${DE_DETECTED})"
-    echo "Display: ${DISPLAY:-'Not set but GUI running'}"
-else
-    echo "GUI: 🔄 Built-in GUI available but not running"
-    echo "Note: GUI can be started or accessed via AnyDesk"
-fi
-
-echo ""
-echo -e "${GREEN}✅ STB HG680P Bullseye setup completed successfully!${NC}"
-echo ""
-echo -e "${CYAN}🎉 Enhanced features ready:${NC}"
-echo -e "${PURPLE}• Bot Token and Channel ID integrated${NC}"
-echo -e "${PURPLE}• JMDKH features ready for deployment${NC}"
-echo -e "${PURPLE}• Built-in GUI support (no extra desktop)${NC}"
-echo -e "${PURPLE}• AnyDesk remote access to built-in GUI${NC}"
-echo -e "${PURPLE}• Lightweight and optimized${NC}"
-echo ""
-echo -e "${BLUE}📋 Next Steps:${NC}"
-echo "1. Edit .env: nano .env (add Google credentials)"
-echo "2. Start enhanced bot: ./start.sh"
-echo "3. Check logs: ./logs.sh"
-echo "4. Remote access: Use AnyDesk ID above"
-echo "5. Test built-in GUI: /anydesk command"
-echo ""
-echo -e "${CYAN}🎉 Your optimized Bullseye STB is ready!${NC}"
+# Run main setup
+main_setup

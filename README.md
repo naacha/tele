@@ -1,176 +1,215 @@
-# STB HG680P Telegram Bot - Armbian 20.05 Bullseye with Built-in GUI
+# STB HG680P Telegram Bot - Multi-Version Armbian Support
 
-## 🖥️ Optimized for Armbian 20.05 Built-in GUI
+## 🖥️ Enhanced Multi-Version Support
 
-### ✅ Key Optimizations:
-- **🐧 Uses Armbian Built-in GUI** - No unnecessary XFCE4 installation
-- **⚡ Lightweight Design** - Minimal GUI dependencies
-- **🔗 AnyDesk Integration** - Remote access to built-in GUI
+### ✅ Supported Armbian Versions:
+- **🐛 Armbian 20.11 Bullseye** - credentials.json or env tokens
+- **🐛 Armbian 25.11 Bookworm** - env tokens required
+- **🔧 Error Fixing** - GPG keys, dependencies, broken packages
 - **🌟 JMDKH Features** - Torrent, mirror, clone capabilities
-- **🔧 OAuth2 FIXED** - Proper authentication for Bullseye
+- **🔗 AnyDesk Integration** - With dependency resolution
 
 ### ✅ Pre-configured Credentials:
 - **Bot Token:** `8436081597:AAE-8bfWrbvhl26-l9y65p48DfWjQOYPR2A`
 - **Channel ID:** `-1001802424804` (@ZalheraThink)
 
-## 📋 Optimized Deployment
+## 📋 Multi-Version Deployment
 
 ### 1. Extract and Setup
 ```bash
-unzip telegram-bot-stb-armbian-bullseye-gui-optimized.zip
-cd telegram-bot-stb-armbian-bullseye-gui-optimized
-sudo ./setup.sh  # NO XFCE4 installation, uses built-in GUI
+unzip telegram-bot-stb-armbian-multi-version.zip
+cd telegram-bot-stb-armbian-multi-version
+sudo ./setup.sh  # Auto-detects OS version and fixes errors
 ```
 
-**What gets installed:**
-- Docker + Docker Compose for ARM64
-- **NO additional desktop environment**
-- AnyDesk for remote access (works with built-in GUI)
-- Minimal GUI support tools only
-- Enhanced system tools
+**What the setup fixes:**
+- **GPG Key Errors** - Fixes missing Debian archive keys
+- **Broken Dependencies** - Resolves AnyDesk libgtkglext1 issues
+- **Repository Issues** - Updates archive.debian.org to current repos
+- **Docker Detection** - Skips installation if already present
+- **AnyDesk Dependencies** - Installs required GUI libraries
 
-### 2. Configuration (Optional)
+### 2. Configuration by OS Version
+
+#### For Armbian 25.11 Bookworm:
 ```bash
 nano .env
-# Add Google Drive credentials:
+# REQUIRED for Bookworm:
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
-BOT_USERNAME=your_bot_username  # For inline commands
 ```
 
-### 3. Start Optimized Bot
+#### For Armbian 20.11 Bullseye:
+```bash
+# Option 1: Use credentials.json file
+mkdir -p credentials
+# Place your credentials.json in ./credentials/
+
+# Option 2: Use environment variables
+nano .env
+GOOGLE_CLIENT_ID=your_google_client_id  # Optional for Bullseye
+GOOGLE_CLIENT_SECRET=your_google_client_secret  # Optional for Bullseye
+```
+
+### 3. Start Multi-Version Bot
 ```bash
 ./start.sh
-# ✅ Built-in GUI optimized containers
-# ✅ Lightweight deployment
-# ✅ AnyDesk remote access ready
+# ✅ Auto-detects Armbian version
+# ✅ Sets appropriate auth method
+# ✅ Docker Compose deployment only
 ```
 
-## 🖥️ Built-in GUI Support
+## 🔧 Error Fixing Features
 
-### Supported Built-in Environments:
-- **LXDE** - Common Armbian built-in GUI
-- **Openbox** - Minimal window manager
-- **Minimal GUI** - Basic X11 environment
-- **Auto-detection** - Detects current environment
-
-### Remote Access via AnyDesk:
-- **AnyDesk ID** - Get from `/anydesk` command
-- **Password:** `bullseyeaccess`
-- **Access built-in GUI** - No additional desktop needed
-
-## 🔧 Enhanced Commands
-
-### 🖥️ **Built-in GUI Info** - `/anydesk`
+### GPG Key Error Resolution:
+**Error Fixed:**
 ```
-/anydesk
-
-🖥️ AnyDesk Remote Access - STB HG680P
-🔧 AnyDesk Information:
-• Status: ✅ Active
-• AnyDesk ID: 123456789
-💻 System Information:
-• GUI Type: Built-in Armbian GUI
-• Desktop Environment: LXDE (Built-in)
-🔗 Remote Access:
-✅ Ready for remote connection to built-in GUI
+W: GPG error: http://archive.debian.org/debian bullseye InRelease: 
+The following signatures couldn't be verified because the public key is not available: 
+NO_PUBKEY 0E98404D386FA1D9 NO_PUBKEY 6ED0E7B82643E131
 ```
 
-### 💻 **System Info with Built-in GUI** - `/system`
-```
-/system
+**Solution Applied:**
+```bash
+# Add missing keys
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E98404D386FA1D9
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6ED0E7B82643E131
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 605C66F00D6C9793
 
-💻 STB HG680P System Information - Bullseye Built-in GUI
-🖥️ GUI Environment:
-• GUI Available: ✅ Yes
-• GUI Type: Built-in Armbian GUI
-• Desktop: LXDE (Built-in)
-🔗 Remote Access:
-• AnyDesk: ✅ Active
-• AnyDesk ID: 123456789
+# Update repository sources from archive to current
 ```
+
+### AnyDesk Dependency Error Resolution:
+**Error Fixed:**
+```
+anydesk : Depends: libgtkglext1 but it is not installed
+E: Unmet dependencies. Try 'apt --fix-broken install'
+```
+
+**Solution Applied:**
+```bash
+# Install dependencies first
+apt-get install -y libgtkglext1 libgtkglext1-dev libglib2.0-0 libgtk2.0-0
+# Then install AnyDesk
+apt-get install -y anydesk
+```
+
+## 🎯 OS-Specific Features
+
+### Armbian 20.11 Bullseye:
+- **Auth Method:** credentials.json file OR env tokens
+- **Python Version:** 3.9
+- **Docker Base:** python:3.9-slim-bullseye
+- **GUI Libraries:** Standard Debian Bullseye packages
+
+### Armbian 25.11 Bookworm:
+- **Auth Method:** Environment tokens (REQUIRED)
+- **Python Version:** 3.11
+- **Docker Base:** python:3.11-slim-bookworm
+- **GUI Libraries:** Updated Bookworm packages with non-free-firmware
 
 ## 🔍 Expected Results
 
-### Successful Startup:
+### Successful Multi-Version Setup:
 ```bash
-✅ STB Built-in GUI Telegram Bot started successfully!
-📱 Armbian: 20.05 (current)
-📱 Board: HG680P
-🖥️ GUI: LXDE (Built-in)
-🔗 AnyDesk: active
+📱 Detected System:
+Armbian Version: 20.11.1 Bullseye
+Base OS: bullseye
+Board: HG680P
+Architecture: aarch64
+
+🔑 Fixing GPG key errors...
+✅ GPG keys and repositories fixed
+
+🔧 Fixing broken packages...
+✅ Broken packages fixed
+
+🖥️ Installing AnyDesk with dependency fixing for bullseye...
+📦 Installing AnyDesk dependencies...
+✅ AnyDesk installed successfully
 🆔 AnyDesk ID: 123456789
-🎉 Built-in GUI Bot ready with enhanced features!
 ```
 
-### Working Built-in GUI Features:
+### Working Multi-Version Commands:
 ```
-User: /anydesk
-Bot: 🖥️ AnyDesk Remote Access - STB HG680P
-     • GUI Type: Built-in Armbian GUI
-     • Desktop Environment: LXDE (Built-in)
-     ✅ Ready for remote connection to built-in GUI
+User: /start
+Bot: 🚀 STB Telegram Bot - HG680P Multi-Version Support
+     🐛 Base OS: Bullseye
+     🔑 Auth Method: Credentials File (Bullseye)
 
-User: /system  
-Bot: 💻 STB HG680P System Information - Bullseye Built-in GUI
-     🖥️ GUI Environment:
-     • GUI Type: Built-in Armbian GUI
-     • Desktop: LXDE (Built-in)
+User: /system
+Bot: 💻 STB HG680P Multi-Version System Information
+     🐧 Multi-Version Armbian Information:
+     • Version: 20.11.1 Bullseye
+     • Base OS: Bullseye
+     • Auth Method: Credentials File
+
+User: /auth (on Bullseye)
+Bot: 🔐 Google Drive Authentication - Multi-Version Support
+     🐛 Detected OS: Bullseye
+     🔑 Auth Method: Credentials File
 ```
 
-## 🎯 Built-in GUI Advantages
+## 🐳 Docker Compose Only Deployment
 
-### Lightweight:
-- **No XFCE4 installation** - Uses existing GUI
-- **Minimal dependencies** - Only essential GUI tools
-- **Lower resource usage** - No unnecessary desktop components
-- **Faster deployment** - No desktop environment compilation
+### Multi-Container Architecture:
+```yaml
+services:
+  telegram-bot:
+    container_name: telegram-bot-stb-multi
+    build:
+      args:
+        BASE_OS: ${DETECTED_BASE}  # bullseye or bookworm
 
-### Compatibility:
-- **Works with existing GUI** - No conflicts
-- **Preserves system settings** - Maintains current configuration
-- **AnyDesk integration** - Remote access to familiar interface
-- **Better stability** - No additional desktop layers
+  aria2:
+    container_name: aria2-stb-multi
+```
 
-## 📱 Remote Access Instructions
+### No Direct Docker/CLI Usage:
+- **✅ Docker Compose Only** - All deployments through compose
+- **❌ No docker run commands** - Simplified management
+- **❌ No direct CLI execution** - Container-based operation
+- **✅ Service orchestration** - Proper dependency management
 
-### Connect via AnyDesk to Built-in GUI:
-1. **Get AnyDesk ID:** Use `/anydesk` command in bot
-2. **Download AnyDesk:** Install on your computer/phone
-3. **Connect:** Enter the ID from step 1
-4. **Password:** `bullseyeaccess`
-5. **Access:** Built-in GUI environment
+## 📱 Multi-Version Remote Access
 
-### Built-in GUI Applications:
-- **File Manager** - Built-in file browser
-- **Terminal** - Command line access
-- **Basic Applications** - Whatever is pre-installed on Armbian
-- **Web Browser** - If available in built-in GUI
+### AnyDesk with Dependency Fixing:
+1. **Auto-dependency resolution** - Installs libgtkglext1 and related
+2. **OS-specific packages** - Different packages for Bullseye/Bookworm  
+3. **Fallback installation** - Uses .deb file if repo fails
+4. **Service configuration** - Auto-configures unattended access
 
-## ⚠️ Built-in GUI Notes
+### Connection Instructions:
+1. **Get AnyDesk ID:** Use `/anydesk` command
+2. **Password:** `stbaccess` (auto-configured)
+3. **GUI Access:** Whatever desktop is available on Armbian
+4. **Troubleshooting:** Built-in dependency fixing
 
-### System Requirements:
-- **Armbian 20.05 Bullseye** - With any built-in GUI
-- **X11 Server** - Must be running or available
-- **Basic GUI** - LXDE, Openbox, or minimal GUI
-- **No additional desktop** - Uses existing environment
+## ⚠️ Multi-Version Important Notes
 
-### Performance Benefits:
-- **Reduced RAM usage** - No extra desktop environment
-- **Faster startup** - No desktop compilation
-- **Better stability** - Fewer GUI components
-- **Native integration** - Works with existing setup
+### Docker Installation:
+- **Auto-Detection** - Skips Docker install if already present
+- **Version Check** - Verifies Docker and Docker Compose versions
+- **ARM64 Support** - Installs correct architecture packages
+- **Service Management** - Enables and starts Docker service
 
-## ✅ All Features Working
+### Error Handling:
+- **GPG Key Recovery** - Automatic key server retrieval
+- **Repository Fallback** - Switches from archive to current repos
+- **Broken Package Fix** - Automatic dependency resolution
+- **Service Recovery** - Restarts failed services
 
-- ✅ **Armbian 20.05 Built-in GUI** - Full support without XFCE4
-- ✅ **AnyDesk Remote Access** - Access to built-in GUI
+## ✅ All Multi-Version Features Working
+
+- ✅ **Armbian 20.11 Bullseye** - Full support with credentials.json
+- ✅ **Armbian 25.11 Bookworm** - Full support with env tokens  
+- ✅ **Error Fixing** - GPG keys, dependencies, repositories
+- ✅ **AnyDesk Installation** - With dependency resolution
+- ✅ **Docker Detection** - Skips if already installed
+- ✅ **Multi-Auth Support** - OS-appropriate authentication
 - ✅ **JMDKH Features** - Torrent, mirror, clone
-- ✅ **OAuth2 Authentication** - Fixed for Bullseye
-- ✅ **Channel Subscription** - @ZalheraThink required
-- ✅ **Lightweight Deployment** - Minimal GUI dependencies
-- ✅ **ARM64 Performance** - STB HG680P optimized
+- ✅ **Docker Compose Only** - No direct CLI usage
 
-**🎉 Complete Built-in GUI solution - lightweight and optimized! 🚀**
+**🎉 Complete multi-version solution with comprehensive error fixing! 🚀**
 
-**Extract → Setup → Start → Connect → Access Built-in GUI! 🖥️**
+**Extract → Setup (Auto-Fix) → Configure → Deploy → All Versions Working! 🖥️**

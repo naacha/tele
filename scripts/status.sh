@@ -1,5 +1,5 @@
 #!/bin/bash
-# STB Status Script for Built-in GUI Bullseye
+# Multi-Version STB Status Script
 
 cd "$(dirname "$0")"
 
@@ -8,8 +8,8 @@ PURPLE='\033[0;35m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
-echo -e "${CYAN}📊 STB HG680P Built-in GUI Status${NC}"
-echo -e "${PURPLE}🖥️ Built-in GUI + AnyDesk${NC}"
+echo -e "${CYAN}📊 Multi-Version STB HG680P Status${NC}"
+echo -e "${PURPLE}🖥️ Armbian 20.11 Bullseye & 25.11 Bookworm${NC}"
 echo "================================="
 echo ""
 
@@ -18,34 +18,47 @@ echo "✅ Bot Token: 8436081597:AAE-8bfWrbvhl26-l9y65p48DfWjQOYPR2A"
 echo "✅ Channel ID: -1001802424804 (@ZalheraThink)"
 echo ""
 
-# Show Armbian info
+# Detect OS version
+DETECTED_VERSION="Unknown"
+DETECTED_BASE="bullseye"
 if [ -f "/etc/armbian-release" ]; then
     source /etc/armbian-release
-    echo -e "${PURPLE}🐧 Armbian Information:${NC}"
-    echo "Version: $VERSION"
-    echo "Branch: $BRANCH"
-    echo "Board: $BOARD"
-    echo ""
+    DETECTED_VERSION="$VERSION"
+    if [[ "$VERSION" == *"20.11"* ]] || [[ "$VERSION" == *"bullseye"* ]]; then
+        DETECTED_BASE="bullseye"
+    elif [[ "$VERSION" == *"25.11"* ]] || [[ "$VERSION" == *"bookworm"* ]]; then
+        DETECTED_BASE="bookworm"
+    fi
 fi
 
-# Check built-in GUI status
+echo -e "${PURPLE}🐧 Multi-Version Information:${NC}"
+echo "Armbian Version: $DETECTED_VERSION"
+echo "Base OS: $DETECTED_BASE"
+echo "Architecture: $(uname -m)"
+
+if [ "$DETECTED_BASE" = "bookworm" ]; then
+    echo "Auth Method: Environment Tokens"
+else
+    echo "Auth Method: Credentials File"
+fi
+echo ""
+
+# Check GUI status
 GUI_TYPE="Not detected"
 if [ -n "$DISPLAY" ] || pgrep -x "Xorg" > /dev/null; then
     if pgrep -x "lxsession" > /dev/null; then
         GUI_TYPE="LXDE (Built-in)"
     elif pgrep -x "openbox" > /dev/null; then
         GUI_TYPE="Openbox (Built-in)"
-    elif pgrep -x "xfce4-session" > /dev/null; then
-        GUI_TYPE="XFCE4"
     else
         GUI_TYPE="Minimal GUI (Built-in)"
     fi
-    GUI_STATUS="✅ Active"
+    GUI_STATUS="✅ Available"
 else
     GUI_STATUS="🔄 Available but not running"
 fi
 
-echo -e "${PURPLE}🖥️ Built-in GUI Status:${NC}"
+echo -e "${PURPLE}🖥️ GUI Status:${NC}"
 echo "GUI: $GUI_STATUS"
 echo "Type: $GUI_TYPE"
 echo "Display: ${DISPLAY:-'Not set'}"
@@ -59,7 +72,7 @@ if command -v anydesk &> /dev/null; then
     echo "Service: $ANYDESK_STATUS"
     echo "ID: $ANYDESK_ID"
     if [ "$ANYDESK_STATUS" = "active" ]; then
-        echo "Password: bullseyeaccess"
+        echo "Password: stbaccess"
         echo "GUI Access: $GUI_TYPE"
     fi
 else

@@ -1,8 +1,8 @@
 #!/bin/bash
-# STB Logs Script for Built-in GUI Bullseye
+# Multi-Version STB Logs Script
 
-echo "📋 STB HG680P Built-in GUI Bot Logs"
-echo "🖥️ Built-in GUI + AnyDesk Support"
+echo "📋 Multi-Version STB HG680P Bot Logs"
+echo "🖥️ Support: Armbian 20.11 Bullseye & 25.11 Bookworm"
 echo "Press Ctrl+C to exit"
 echo ""
 

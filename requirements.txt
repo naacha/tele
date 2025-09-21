@@ -1,5 +1,5 @@
-# Requirements for STB HG680P Armbian 20.05 Bullseye Built-in GUI
-# Python 3.9 compatible versions
+# Requirements for STB HG680P Multi-Version Support
+# Compatible with Python 3.9 (Bullseye) and Python 3.11 (Bookworm)
 
 # Core Telegram Bot
 python-telegram-bot==20.7
@@ -9,12 +9,12 @@ requests==2.31.0
 aiohttp==3.8.6
 httpx==0.24.1
 
-# Google Drive API - Bullseye compatible
+# Google Drive API - Multi-version compatible
 google-auth==2.17.3
 google-auth-oauthlib==0.7.1
 google-api-python-client==2.88.0
 
-# JMDKH Enhanced Features - Bullseye compatible
+# JMDKH Enhanced Features
 aria2p==0.11.3
 qbittorrent-api==2023.5.56
 
@@ -34,7 +34,7 @@ cryptography>=41.0.0
 ujson==5.7.0
 pyyaml==6.0
 
-# Additional utilities for Bullseye
+# Additional utilities
 pytz==2023.3
 python-dateutil==2.8.2
 

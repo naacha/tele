@@ -1,14 +1,14 @@
 #!/bin/bash
-# STB Stop Script for Built-in GUI Bullseye
+# Multi-Version STB Stop Script
 
 cd "$(dirname "$0")"
 
-echo "🛑 Stopping STB Built-in GUI Telegram Bot..."
-echo "🖥️ Stopping built-in GUI optimized services..."
+echo "🛑 Stopping Multi-Version STB Telegram Bot..."
+echo "🖥️ Stopping multi-OS services..."
 
 docker-compose down
-docker stop telegram-bot-stb-bullseye aria2-stb-bullseye 2>/dev/null || true
+docker stop telegram-bot-stb-multi aria2-stb-multi 2>/dev/null || true
 
-echo "✅ Built-in GUI STB Bot stopped"
+echo "✅ Multi-Version STB Bot stopped"
 echo "💾 Data preserved"
 echo "🔄 Use ./start.sh to restart"

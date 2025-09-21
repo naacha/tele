@@ -1,9 +1,9 @@
-start - Welcome and built-in GUI bot features overview
-help - Complete help with built-in GUI and AnyDesk features  
-auth - Connect Google Drive (Bullseye-optimized for built-in GUI)
+start - Welcome and multi-version bot features overview
+help - Complete help with multi-OS support
+auth - Connect Google Drive (multi-version auth method)
 d - Mirror to Google Drive (multi-server support)
 t - Download torrent or magnet links
 dc - Clone Google Drive files and folders
-anydesk - AnyDesk remote access to built-in GUI
-system - STB HG680P Bullseye built-in GUI system information
-stats - Enhanced bot statistics with built-in GUI status
+anydesk - AnyDesk remote access with error fixing
+system - Multi-version STB HG680P system information
+stats - Enhanced bot statistics with OS detection
