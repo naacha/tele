@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
       platforms:
         - linux/arm64
-    container_name: telegram-bot-stb-fileupload
+    container_name: telegram-bot-stb-fileupload-fixed
     restart: unless-stopped
     environment:
       - BOT_TOKEN=${BOT_TOKEN:-8436081597:AAE-8bfWrbvhl26-l9y65p48DfWjQOYPR2A}
@@ -18,8 +18,9 @@ services:
       - MAX_SPEED_MBPS=${MAX_SPEED_MBPS:-15}
       - CHUNK_SIZE=${CHUNK_SIZE:-8192}
       - OAUTH_PORT=${OAUTH_PORT:-8080}
-      - ARIA2_SECRET=${ARIA2_SECRET:-stb_file_upload}
+      - ARIA2_SECRET=${ARIA2_SECRET:-stb_file_upload_fixed}
       - DISPLAY=${DISPLAY:-:0}
+      - PIP_BREAK_SYSTEM_PACKAGES=1
     volumes:
       - ./data:/app/data
       - ./downloads:/app/downloads
@@ -36,7 +37,7 @@ services:
       - aria2
     privileged: true
     healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      test: ["CMD", "python", "-c", "print('STB FIXED Health OK'); exit(0)"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -50,7 +51,7 @@ services:
 
   aria2:
     image: p3terx/aria2-pro:latest
-    container_name: aria2-stb-fileupload
+    container_name: aria2-stb-fileupload-fixed
     restart: unless-stopped
     logging:
       driver: none
@@ -58,7 +59,7 @@ services:
       - PUID=1000
       - PGID=1000
       - UMASK_SET=022
-      - RPC_SECRET=${ARIA2_SECRET:-stb_file_upload}
+      - RPC_SECRET=${ARIA2_SECRET:-stb_file_upload_fixed}
       - RPC_PORT=6800
       - LISTEN_PORT=6888
       - DISK_CACHE=64M

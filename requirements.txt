@@ -1,5 +1,5 @@
-# Requirements for STB HG680P File Upload Credentials Support
-# Python 3.9 compatible versions
+# Requirements for STB HG680P FIXED externally-managed-environment
+# Python 3.9 compatible versions - FIXED for externally-managed-environment
 
 # Core Telegram Bot
 python-telegram-bot==20.7

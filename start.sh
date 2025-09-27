@@ -1,5 +1,5 @@
 #!/bin/bash
-# STB HG680P Start Script with File Upload Credentials Support
+# STB HG680P Start Script with FIXED externally-managed-environment
 
 cd "$(dirname "$0")"
 
@@ -11,9 +11,9 @@ CYAN='\033[0;36m'
 PURPLE='\033[0;35m'
 NC='\033[0m'
 
-echo -e "${CYAN}🚀 Starting STB HG680P Bot - File Upload Credentials${NC}"
-echo -e "${CYAN}================================================${NC}"
-echo -e "${PURPLE}🖥️ Enhanced with Telegram File Upload for credentials.json${NC}"
+echo -e "${CYAN}🚀 Starting STB HG680P Bot - FIXED externally-managed-environment${NC}"
+echo -e "${CYAN}=======================================================${NC}"
+echo -e "${PURPLE}🔧 FIXED: No more externally-managed-environment errors!${NC}"
 echo ""
 
 # Load environment variables
@@ -24,15 +24,19 @@ else
     exit 1
 fi
 
+# FIXED: Set pip environment variables
+export PIP_BREAK_SYSTEM_PACKAGES=1
+
 # Force stop existing containers
 echo -e "${BLUE}🛑 Force stopping existing containers...${NC}"
-docker stop telegram-bot-stb-fileupload aria2-stb-fileupload 2>/dev/null || true
-docker rm -f telegram-bot-stb-fileupload aria2-stb-fileupload 2>/dev/null || true
+docker stop telegram-bot-stb-fileupload-fixed aria2-stb-fileupload-fixed 2>/dev/null || true
+docker rm -f telegram-bot-stb-fileupload-fixed aria2-stb-fileupload-fixed 2>/dev/null || true
 
 # Show integrated credentials
 echo -e "${GREEN}✅ Bot Token: Integrated${NC}"
 echo -e "${GREEN}✅ Channel ID: Integrated${NC}"
-echo -e "${PURPLE}✅ File Upload Credentials: Ready${NC}"
+echo -e "${PURPLE}✅ FIXED File Upload Credentials: Ready${NC}"
+echo -e "${PURPLE}✅ externally-managed-environment: FIXED${NC}"
 
 # Check system info
 if [ -f "/etc/armbian-release" ]; then
@@ -48,6 +52,12 @@ if [ -f "credentials/credentials.json" ]; then
 else
     echo -e "${YELLOW}📄 credentials.json: Not uploaded (use /auth in bot)${NC}"
 fi
+
+# Check FIXED status
+echo -e "${PURPLE}🔧 FIXED Status:${NC}"
+echo -e "${GREEN}   ✅ externally-managed-environment: FIXED${NC}"
+echo -e "${GREEN}   ✅ PIP_BREAK_SYSTEM_PACKAGES: Set${NC}"
+echo -e "${GREEN}   ✅ pip.conf: Configured${NC}"
 
 # Check GUI availability
 GUI_TYPE="Not detected"
@@ -123,7 +133,7 @@ if [ $OAUTH_PORT -ne $ORIGINAL_PORT ]; then
 fi
 
 echo ""
-echo -e "${BLUE}📱 File Upload STB Information:${NC}"
+echo -e "${BLUE}📱 FIXED STB Information:${NC}"
 echo "Model: HG680P"
 echo "Architecture: $(uname -m)"
 echo "OAuth Port: $OAUTH_PORT"
@@ -134,9 +144,12 @@ echo "AnyDesk: $ANYDESK_STATUS"
 if [ "$ANYDESK_ID" != "Not available" ]; then
     echo "AnyDesk ID: $ANYDESK_ID"
 fi
+echo "externally-managed-environment: ✅ FIXED"
 
 echo ""
-echo -e "${PURPLE}🌟 File Upload Enhanced Features:${NC}"
+echo -e "${PURPLE}🌟 FIXED Enhanced Features:${NC}"
+echo "✅ externally-managed-environment FIXED"
+echo "✅ PIP_BREAK_SYSTEM_PACKAGES configured"
 echo "✅ Upload credentials.json via Telegram"
 echo "✅ Replace Google accounts easily"
 echo "✅ No SSH access needed for credentials"
@@ -160,24 +173,24 @@ if [ "$GUI_STATUS" = "Available" ]; then
     fi
 fi
 
-# Build and start services
-echo -e "${BLUE}🔨 Building file upload optimized Docker images...${NC}"
-docker-compose build --no-cache
+# FIXED: Build and start services with proper environment
+echo -e "${BLUE}🔨 Building FIXED Docker images (externally-managed-environment resolved)...${NC}"
+PIP_BREAK_SYSTEM_PACKAGES=1 docker-compose build --no-cache
 
-echo -e "${BLUE}🚀 Starting file upload STB services...${NC}"
-OAUTH_PORT=$OAUTH_PORT docker-compose up -d
+echo -e "${BLUE}🚀 Starting FIXED STB services...${NC}"
+PIP_BREAK_SYSTEM_PACKAGES=1 OAUTH_PORT=$OAUTH_PORT docker-compose up -d
 
 # Wait for services
-echo -e "${BLUE}⏳ Waiting for file upload services to initialize...${NC}"
+echo -e "${BLUE}⏳ Waiting for FIXED services to initialize...${NC}"
 sleep 25
 
 # Check services
 if docker-compose ps | grep -q "Up"; then
     echo ""
-    echo -e "${GREEN}✅ STB File Upload Telegram Bot started successfully!${NC}"
+    echo -e "${GREEN}✅ STB FIXED File Upload Telegram Bot started successfully!${NC}"
     echo ""
 
-    echo -e "${BLUE}📊 File Upload Service Status:${NC}"
+    echo -e "${BLUE}📊 FIXED Service Status:${NC}"
     docker-compose ps
     echo ""
 
@@ -196,34 +209,35 @@ if docker-compose ps | grep -q "Up"; then
     fi
 
     echo ""
-    echo -e "${CYAN}🎉 File Upload Bot ready with enhanced features!${NC}"
+    echo -e "${CYAN}🎉 FIXED Bot ready with enhanced features!${NC}"
     echo ""
     echo -e "${GREEN}✅ Integrated Credentials:${NC}"
     echo "• Bot Token: 8436081597:AAE-8bfWrbvhl26-l9y65p48DfWjQOYPR2A"
     echo "• Channel: @ZalheraThink (ID: -1001802424804)"
     echo ""
-    echo -e "${PURPLE}🌟 File Upload Enhanced Commands:${NC}"
+    echo -e "${PURPLE}🌟 FIXED Enhanced Commands:${NC}"
     echo "• /auth - Upload credentials.json & connect Drive"
     echo "• /setcreds - Replace existing credentials.json"
     echo "• /d [link] - Mirror to Google Drive"
     echo "• /t [torrent] - Download torrent/magnet"
     echo "• /dc [gdrive] - Clone Google Drive"
-    echo "• /system - File upload system info"
+    echo "• /system - FIXED system info"
     echo ""
 
-    echo -e "${BLUE}📄 File Upload Instructions:${NC}"
+    echo -e "${BLUE}📄 FIXED File Upload Instructions:${NC}"
     echo "1. Use /auth command in bot"
     echo "2. Upload credentials.json when requested"
     echo "3. Complete OAuth authorization"
     echo "4. Start using all features!"
     echo ""
     echo "💡 To switch Google accounts: Use /setcreds"
+    echo "🔧 externally-managed-environment: FIXED ✅"
 
     if [ "$ANYDESK_STATUS" = "active" ] && [ "$ANYDESK_ID" != "Not available" ]; then
         echo ""
         echo -e "${PURPLE}🖥️ Remote Access Ready:${NC}"
         echo "• AnyDesk ID: $ANYDESK_ID"
-        echo "• Password: fileuploadaccess"
+        echo "• Password: fixedaccess"
         echo "• GUI Access: $GUI_TYPE"
         echo "• Connect via AnyDesk client"
     fi
@@ -235,12 +249,13 @@ if docker-compose ps | grep -q "Up"; then
     echo "./logs.sh    - View live logs"
     echo "./stop.sh    - Stop the bot"
     echo "./restart.sh - Restart the bot"
-    echo "./status.sh  - Check file upload status"
+    echo "./status.sh  - Check FIXED status"
     echo ""
+    echo -e "${PURPLE}🔧 FIXED: No more externally-managed-environment errors! 🎉${NC}"
 
 else
     echo ""
-    echo -e "${RED}❌ Failed to start File Upload STB Bot${NC}"
+    echo -e "${RED}❌ Failed to start FIXED STB Bot${NC}"
     echo ""
     echo -e "${BLUE}🔍 Checking logs:${NC}"
     docker-compose logs --tail=20

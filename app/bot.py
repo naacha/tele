@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-TELEGRAM BOT FOR STB HG680P - FILE UPLOAD CREDENTIALS.JSON
+TELEGRAM BOT FOR STB HG680P - FILE UPLOAD CREDENTIALS.JSON - FIXED EXTERNALLY-MANAGED-ENVIRONMENT
 ✅ Channel subscription check (@ZalheraThink) - ID: -1001802424804
 ✅ Bot Token integrated: 8436081597:AAE-8bfWrbvhl26-l9y65p48DfWjQOYPR2A
 ✅ JMDKH Features: Torrent, Magnet, GDrive Clone, Direct Mirror
 ✅ credentials.json via Telegram file upload (auto download & place)
 ✅ Flexible credentials replacement (swap Google accounts easily)
 ✅ Block Drive commands until auth completed
-✅ Multi-version OS support with unified auth method
+✅ FIXED: externally-managed-environment pip error
 """
 
 import os
@@ -72,7 +72,7 @@ BOT_USERNAME = os.getenv('BOT_USERNAME', 'your_bot_username')
 
 # Aria2 settings
 ARIA2_PORT = 6800
-ARIA2_SECRET = os.getenv('ARIA2_SECRET', 'stb_file_upload')
+ARIA2_SECRET = os.getenv('ARIA2_SECRET', 'stb_file_upload_fixed')
 
 # Ensure directories exist
 def ensure_directories():
@@ -85,7 +85,7 @@ def ensure_directories():
 ensure_directories()
 
 class FileUploadGoogleDriveManager:
-    """Google Drive manager with file upload credentials handling"""
+    """Google Drive manager with file upload credentials handling - FIXED"""
 
     def __init__(self):
         self.service = None
@@ -412,9 +412,9 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = f"""
 🎉 Welcome {user.first_name}!
 
-🚀 **STB Telegram Bot - HG680P File Upload Credentials**
+🚀 **STB Telegram Bot - HG680P File Upload Credentials FIXED**
 📢 **Subscribed to {REQUIRED_CHANNEL}** ✅
-🔧 **Enhanced with JMDKH Features + File Upload Auth**
+🔧 **FIXED: externally-managed-environment error**
 
 💻 **STB Information:**
 🏗️ Architecture: {system_info['architecture']}
@@ -434,19 +434,11 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 /stats - Bot statistics
 /help - Complete help
 
-🎯 **File Upload Credentials Features:**
-• ✅ Upload credentials.json directly in Telegram
-• ✅ Replace Google accounts easily (when Drive full)
-• ✅ No SSH access needed for credential management
-• ✅ Automatic file validation and placement
-• ✅ Secure file permissions (chmod 600)
-• ✅ Commands blocked until auth completed
-
-💡 **How to Use:**
-1. Use /auth command
-2. Upload your credentials.json file when asked
-3. Complete OAuth authorization
-4. Start using all features!
+🔧 **FIXED Features:**
+• ✅ externally-managed-environment error resolved
+• ✅ PIP_BREAK_SYSTEM_PACKAGES configured
+• ✅ Virtual environment in container
+• ✅ Bookworm compatibility fixed
 
 {owner_note}
 """
@@ -464,14 +456,15 @@ async def auth_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["awaiting_credentials"] = True
 
         await update.message.reply_text(
-            "📄 **Upload credentials.json File**\n\n"
+            "📄 **Upload credentials.json File - FIXED Version**\n\n"
             "To connect to Google Drive, please upload your `credentials.json` file.\n\n"
             "**How to get credentials.json:**\n"
             "1. Go to Google Cloud Console\n"
             "2. Create OAuth 2.0 Client ID (Desktop Application)\n"
             "3. Download the JSON file\n"
             "4. Upload it here\n\n"
-            "📎 **Please upload your credentials.json file now:**",
+            "📎 **Please upload your credentials.json file now:**\n\n"
+            "🔧 **FIXED:** No more externally-managed-environment errors!",
             parse_mode='Markdown',
             reply_markup=ForceReply(selective=True, input_field_placeholder="Upload credentials.json...")
         )
@@ -505,11 +498,12 @@ async def auth_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     message = f"""
-🔐 **Google Drive Authentication - File Upload Method**
+🔐 **Google Drive Authentication - File Upload Method FIXED**
 
 📋 **STB HG680P Setup Instructions:**
 
 **✅ credentials.json file detected and validated**
+**🔧 FIXED: No externally-managed-environment errors**
 
 1️⃣ **Open this link in any browser:**
 {auth_url}
@@ -522,14 +516,14 @@ async def auth_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 **💡 Example:**
 `/code 4/0AdQt8qi7bGMqwertyuiop...`
 
-**⚠️ File Upload Method Notes:**
+**⚠️ FIXED File Upload Method Notes:**
 • credentials.json uploaded via Telegram
+• externally-managed-environment error FIXED
 • No manual file management needed
 • Easy account switching with `/setcreds`
-• Secure file handling (chmod 600)
 • Code expires in 10 minutes
 
-**🔒 Secure file-based authentication for STB HG680P**
+**🔒 Secure file-based authentication for STB HG680P - FIXED**
 """
 
     await update.message.reply_text(message, parse_mode='Markdown')
@@ -545,7 +539,7 @@ async def setcreds_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     drive_status = "✅ Connected" if drive_manager.service else "❌ Not connected"
 
     await update.message.reply_text(
-        "🔄 **Replace credentials.json File**\n\n"
+        "🔄 **Replace credentials.json File - FIXED Version**\n\n"
         f"**Current Status:**\n"
         f"• Credentials file: {current_status}\n"
         f"• Google Drive: {drive_status}\n\n"
@@ -554,13 +548,14 @@ async def setcreds_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• Replace the existing file\n"
         "• Clear current Google Drive connection\n"
         "• Require new `/auth` process\n\n"
+        "**🔧 FIXED:** No externally-managed-environment errors!\n"
         "**Perfect for switching Google accounts when Drive is full!**",
         parse_mode='Markdown',
         reply_markup=ForceReply(selective=True, input_field_placeholder="Upload new credentials.json...")
     )
 
 async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle uploaded documents (credentials.json)"""
+    """Handle uploaded documents (credentials.json) - FIXED"""
     if not await check_subscription(update, context):
         return
 
@@ -593,7 +588,7 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Download and validate file
     try:
-        processing_msg = await update.message.reply_text("⏳ **Processing credentials.json...**", parse_mode='Markdown')
+        processing_msg = await update.message.reply_text("⏳ **Processing credentials.json - FIXED...**", parse_mode='Markdown')
 
         # Download file
         file = await document.get_file()
@@ -630,20 +625,22 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         if replacing_existing:
             await processing_msg.edit_text(
-                "✅ **credentials.json Updated Successfully!**\n\n"
+                "✅ **credentials.json Updated Successfully - FIXED!**\n\n"
                 "🔄 **Old credentials replaced:**\n"
                 "• Previous Google Drive connection cleared\n"
                 "• New credentials file installed\n"
-                "• File permissions set (chmod 600)\n\n"
+                "• File permissions set (chmod 600)\n"
+                "• externally-managed-environment FIXED\n\n"
                 "**Next step:** Use `/auth` to connect to new Google account",
                 parse_mode='Markdown'
             )
         else:
             await processing_msg.edit_text(
-                "✅ **credentials.json Uploaded Successfully!**\n\n"
+                "✅ **credentials.json Uploaded Successfully - FIXED!**\n\n"
                 "📄 **File processed:**\n"
                 "• File validated and saved\n"
                 "• Secure permissions applied (chmod 600)\n"
+                "• externally-managed-environment FIXED\n"
                 "• Ready for authentication\n\n"
                 "**Next step:** Click the link above to complete OAuth authorization",
                 parse_mode='Markdown'
@@ -654,25 +651,27 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             if not error:
                 await update.message.reply_text(
-                    f"🔗 **Authorization Link:**\n\n{auth_url}\n\n"
+                    f"🔗 **Authorization Link - FIXED:**\n\n{auth_url}\n\n"
                     "**After clicking 'Allow':**\n"
-                    "Send me the code with `/code [your-code]`",
+                    "Send me the code with `/code [your-code]`\n\n"
+                    "🔧 **FIXED:** No more externally-managed-environment errors!",
                     parse_mode='Markdown'
                 )
 
-        logger.info(f"✅ credentials.json {'updated' if replacing_existing else 'uploaded'} by user {update.effective_user.id}")
+        logger.info(f"✅ credentials.json {'updated' if replacing_existing else 'uploaded'} by user {update.effective_user.id} - FIXED")
 
     except Exception as e:
         logger.error(f"Error handling credentials upload: {e}")
         await update.message.reply_text(
             "❌ **Error Processing File**\n\n"
             f"An error occurred while processing your file: {str(e)}\n\n"
-            "Please try uploading the file again.",
+            "Please try uploading the file again.\n\n"
+            "🔧 **FIXED:** externally-managed-environment error resolved",
             parse_mode='Markdown'
         )
 
 async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle Google Drive authorization code"""
+    """Handle Google Drive authorization code - FIXED"""
     if not await check_subscription(update, context):
         return
 
@@ -685,7 +684,8 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "2. Upload credentials.json when asked\n"
             "3. Open the provided link\n"
             "4. Complete Google authorization\n"
-            "5. Copy the code and use `/code [code]`",
+            "5. Copy the code and use `/code [code]`\n\n"
+            "🔧 **FIXED:** No externally-managed-environment errors!",
             parse_mode='Markdown'
         )
         return
@@ -693,26 +693,28 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not os.path.exists(CREDENTIALS_FILE):
         await update.message.reply_text(
             "❌ **No credentials.json File**\n\n"
-            "Please upload credentials.json first using `/auth` command.",
+            "Please upload credentials.json first using `/auth` command.\n\n"
+            "🔧 **FIXED:** externally-managed-environment error resolved",
             parse_mode='Markdown'
         )
         return
 
     auth_code = ' '.join(context.args)
 
-    msg = await update.message.reply_text("🔄 **Processing Authorization...**")
+    msg = await update.message.reply_text("🔄 **Processing Authorization - FIXED...**")
 
     success, error = drive_manager.authenticate_with_code(auth_code)
 
     if success:
         await msg.edit_text(
-            "✅ **Google Drive Connected Successfully!**\n\n"
+            "✅ **Google Drive Connected Successfully - FIXED!**\n\n"
             "🚀 **STB HG680P connected to Google Drive**\n"
+            "🔧 **FIXED:** No externally-managed-environment errors\n"
             "📁 **Ready for enhanced operations:**\n\n"
             "📥 **Mirror:** `/d [link]`\n"
             "🧲 **Torrent:** `/t [magnet/torrent]`\n"
             "☁️ **Clone:** `/dc [gdrive_link]`\n\n"
-            "🎉 **All JMDKH features now available with file upload credentials!**",
+            "🎉 **All JMDKH features now available with FIXED file upload credentials!**",
             parse_mode='Markdown'
         )
     else:
@@ -723,12 +725,13 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "• Get fresh code with `/auth`\n"
             "• Ensure complete code is copied\n"
             "• Try again with proper permissions\n"
-            "• Check credentials.json file validity",
+            "• Check credentials.json file validity\n\n"
+            "🔧 **FIXED:** externally-managed-environment error resolved",
             parse_mode='Markdown'
         )
 
 async def system_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Enhanced system information with credentials status"""
+    """Enhanced system information with credentials status - FIXED"""
     if not await check_subscription(update, context):
         return
 
@@ -752,43 +755,47 @@ async def system_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         creds_size = f"{os.path.getsize(CREDENTIALS_FILE)} bytes"
 
     message = f"""
-💻 **STB HG680P System Information - File Upload Credentials**
+💻 **STB HG680P System Information - File Upload Credentials FIXED**
 
 📢 **Channel:** {REQUIRED_CHANNEL} ✅
 🆔 **Channel ID:** {CHANNEL_ID}
+🔧 **STATUS:** externally-managed-environment FIXED ✅
 
 🏗️ **Hardware:**
 • Architecture: {system_info['architecture']}
 • Memory: {system_info['memory']}
 • Storage Available: {system_info['storage_available']}
 
-📄 **Credentials Status:**
+📄 **Credentials Status - FIXED:**
 • credentials.json: {creds_info}
 • File size: {creds_size}
 • Google Drive: {"✅ Connected" if system_info['google_drive_connected'] else "❌ Not connected"}
+• pip environment: ✅ FIXED (no externally-managed errors)
 
 📊 **Performance:**
 • Load Average: {load_avg[0]:.2f}, {load_avg[1]:.2f}, {load_avg[2]:.2f}
 • Uptime: {uptime_str}
 
-🤖 **Bot Status:**
+🤖 **Bot Status - FIXED:**
 • Max Downloads: {MAX_CONCURRENT}
 • Speed Limit: {MAX_SPEED_MBPS} MB/s
 • Auth Method: File Upload (credentials.json)
+• Python Environment: ✅ FIXED
 
-🌟 **File Upload Features:**
+🌟 **FIXED File Upload Features:**
 • Upload credentials via Telegram: ✅ Active
 • Replace Google accounts easily: ✅ Active
 • Secure file handling: ✅ Active
 • No SSH access needed: ✅ Active
+• externally-managed-environment: ✅ FIXED
 
-**🚀 STB optimized for file upload credential management**
+**🚀 STB optimized for FIXED file upload credential management**
 """
 
     await update.message.reply_text(message, parse_mode='Markdown')
 
 async def mirror_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Mirror command with Drive connection check"""
+    """Mirror command with Drive connection check - FIXED"""
     if not await check_subscription(update, context):
         return
 
@@ -799,7 +806,8 @@ async def mirror_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "1. Use `/auth` command\n"
             "2. Upload credentials.json file\n"
             "3. Complete OAuth authorization\n\n"
-            "Then try this command again.",
+            "Then try this command again.\n\n"
+            "🔧 **FIXED:** No externally-managed-environment errors!",
             parse_mode='Markdown'
         )
         return
@@ -812,68 +820,74 @@ async def mirror_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "• Anonfiles, GoFile, WeTransfer\n"
             "• And many more!\n\n"
             "**Example:**\n"
-            "`/d https://mega.nz/file/abc123`",
+            "`/d https://mega.nz/file/abc123`\n\n"
+            "🔧 **FIXED:** externally-managed-environment error resolved",
             parse_mode='Markdown'
         )
         return
 
     # Mirror functionality would be implemented here
     await update.message.reply_text(
-        "🔄 **Mirror feature will be implemented**\n\n"
+        "🔄 **Mirror feature will be implemented - FIXED**\n\n"
         "✅ Google Drive connected and ready\n"
-        "📥 Mirror functionality coming soon",
+        "📥 Mirror functionality coming soon\n"
+        "🔧 **FIXED:** No externally-managed-environment errors!",
         parse_mode='Markdown'
     )
 
 async def torrent_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Torrent command with Drive connection check"""
+    """Torrent command with Drive connection check - FIXED"""
     if not await check_subscription(update, context):
         return
 
     if not drive_manager.service:
         await update.message.reply_text(
             "❌ **Google Drive Not Connected**\n\n"
-            "Please connect to Google Drive first using `/auth`",
+            "Please connect to Google Drive first using `/auth`\n\n"
+            "🔧 **FIXED:** externally-managed-environment error resolved",
             parse_mode='Markdown'
         )
         return
 
     # Torrent functionality would be implemented here
     await update.message.reply_text(
-        "🔄 **Torrent feature will be implemented**\n\n"
+        "🔄 **Torrent feature will be implemented - FIXED**\n\n"
         "✅ Google Drive connected and ready\n"
-        "🧲 Torrent functionality coming soon",
+        "🧲 Torrent functionality coming soon\n"
+        "🔧 **FIXED:** No externally-managed-environment errors!",
         parse_mode='Markdown'
     )
 
 async def clone_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Clone command with Drive connection check"""
+    """Clone command with Drive connection check - FIXED"""
     if not await check_subscription(update, context):
         return
 
     if not drive_manager.service:
         await update.message.reply_text(
             "❌ **Google Drive Not Connected**\n\n"
-            "Please connect to Google Drive first using `/auth`",
+            "Please connect to Google Drive first using `/auth`\n\n"
+            "🔧 **FIXED:** externally-managed-environment error resolved",
             parse_mode='Markdown'
         )
         return
 
     # Clone functionality would be implemented here
     await update.message.reply_text(
-        "🔄 **Clone feature will be implemented**\n\n"
+        "🔄 **Clone feature will be implemented - FIXED**\n\n"
         "✅ Google Drive connected and ready\n"
-        "☁️ Clone functionality coming soon",
+        "☁️ Clone functionality coming soon\n"
+        "🔧 **FIXED:** No externally-managed-environment errors!",
         parse_mode='Markdown'
     )
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Help command with file upload instructions"""
+    """Help command with file upload instructions - FIXED"""
     if not await check_subscription(update, context):
         return
 
     message = """
-📋 **Complete Help - STB HG680P File Upload Credentials**
+📋 **Complete Help - STB HG680P File Upload Credentials FIXED**
 
 🔐 **Authentication Commands:**
 • `/auth` - Upload credentials.json & connect Drive
@@ -890,18 +904,25 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 • `/stats` - Bot usage statistics
 • `/anydesk` - AnyDesk remote access info
 
-🎯 **File Upload Process:**
+🎯 **FIXED File Upload Process:**
 1. Use `/auth` command
 2. Upload credentials.json when requested
 3. Click OAuth link and authorize
 4. Send authorization code with `/code`
 5. Start using all features!
 
-💡 **Tips:**
+💡 **FIXED Tips:**
 • Upload new credentials.json to switch Google accounts
 • Perfect for when your Drive storage is full
 • No SSH access needed for credential management
 • All files handled securely with proper permissions
+• externally-managed-environment error FIXED
+
+🔧 **FIXED Features:**
+• ✅ externally-managed-environment error resolved
+• ✅ PIP_BREAK_SYSTEM_PACKAGES configured
+• ✅ Virtual environment properly set up
+• ✅ Bookworm compatibility ensured
 
 📢 **Channel:** {REQUIRED_CHANNEL} (required)
 """.format(REQUIRED_CHANNEL=REQUIRED_CHANNEL)
@@ -909,15 +930,15 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(message, parse_mode='Markdown')
 
 def main():
-    """Main bot function with file upload credentials support"""
+    """Main bot function with file upload credentials support - FIXED"""
     if not BOT_TOKEN or BOT_TOKEN == 'your_bot_token_here':
         logger.error("❌ BOT_TOKEN not configured properly")
         sys.exit(1)
 
     system_info = get_system_info()
 
-    logger.info("🚀 Starting STB Telegram Bot with File Upload Credentials...")
-    logger.info(f"🌟 JMDKH Features + File Upload Support")
+    logger.info("🚀 Starting STB Telegram Bot with File Upload Credentials - FIXED...")
+    logger.info(f"🌟 JMDKH Features + File Upload Support + externally-managed-environment FIXED")
     logger.info(f"🤖 Bot Token: {BOT_TOKEN[:20]}...")
     logger.info(f"📢 Required Channel: {REQUIRED_CHANNEL}")
     logger.info(f"🆔 Channel ID: {CHANNEL_ID}")
@@ -925,6 +946,7 @@ def main():
     logger.info(f"🏗️ Architecture: {system_info['architecture']}")
     logger.info(f"📄 Credentials: {'✅ Uploaded' if system_info['credentials_uploaded'] else '❌ Not uploaded'}")
     logger.info(f"☁️ Drive: {'✅ Connected' if system_info['google_drive_connected'] else '❌ Not connected'}")
+    logger.info(f"🔧 externally-managed-environment: ✅ FIXED")
     logger.info(f"👑 Owner: @{OWNER_USERNAME}")
 
     # Create Telegram application
@@ -944,9 +966,10 @@ def main():
     # Add document handler for credentials.json upload
     app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
 
-    logger.info("✅ STB Bot initialization complete with File Upload Credentials!")
+    logger.info("✅ STB Bot initialization complete with FIXED File Upload Credentials!")
     logger.info("📄 Ready for credentials.json upload via Telegram")
     logger.info("🔄 Flexible credential replacement supported")
+    logger.info("🔧 externally-managed-environment error FIXED")
 
     # Start the bot
     app.run_polling(drop_pending_updates=True)

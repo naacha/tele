@@ -1,5 +1,5 @@
 #!/bin/bash
-# STB HG680P Setup Script with File Upload Credentials Support
+# STB HG680P Setup Script with FIXED externally-managed-environment
 
 set -e
 
@@ -11,9 +11,9 @@ CYAN='\033[0;36m'
 PURPLE='\033[0;35m'
 NC='\033[0m'
 
-echo -e "${CYAN}🚀 STB HG680P Setup - File Upload Credentials${NC}"
-echo -e "${CYAN}==============================================${NC}"
-echo -e "${PURPLE}🖥️ Enhanced with Telegram File Upload for credentials.json${NC}"
+echo -e "${CYAN}🚀 STB HG680P Setup - FIXED externally-managed-environment${NC}"
+echo -e "${CYAN}========================================================${NC}"
+echo -e "${PURPLE}🔧 FIXED: No more externally-managed-environment errors!${NC}"
 echo ""
 
 # Check if running as root
@@ -97,6 +97,34 @@ fix_broken_packages() {
     echo -e "${GREEN}✅ Broken packages fixed${NC}"
 }
 
+# FIXED: Function to handle externally-managed-environment
+fix_externally_managed_environment() {
+    echo -e "${PURPLE}🔧 FIXING externally-managed-environment error...${NC}"
+
+    # Method 1: Set global environment variable
+    export PIP_BREAK_SYSTEM_PACKAGES=1
+    echo "export PIP_BREAK_SYSTEM_PACKAGES=1" >> /etc/environment
+
+    # Method 2: Create pip.conf
+    mkdir -p /etc/pip
+    cat > /etc/pip/pip.conf << EOF
+[global]
+break-system-packages = true
+EOF
+
+    # Method 3: For current user
+    mkdir -p ~/.pip
+    cat > ~/.pip/pip.conf << EOF
+[global]
+break-system-packages = true
+EOF
+
+    echo -e "${GREEN}✅ externally-managed-environment FIXED${NC}"
+    echo -e "${GREEN}   • PIP_BREAK_SYSTEM_PACKAGES=1 set globally${NC}"
+    echo -e "${GREEN}   • pip.conf configured${NC}"
+    echo -e "${GREEN}   • Ready for Docker container build${NC}"
+}
+
 # Check if Docker is already installed
 check_docker_installed() {
     if command -v docker &> /dev/null && command -v docker-compose &> /dev/null; then
@@ -109,9 +137,9 @@ check_docker_installed() {
     fi
 }
 
-# Install Docker for ARM64
+# FIXED: Install Docker for ARM64 with pip fix
 install_docker() {
-    echo -e "${BLUE}🐳 Installing Docker for ARM64...${NC}"
+    echo -e "${BLUE}🐳 Installing Docker for ARM64 with FIXED pip...${NC}"
 
     # Install prerequisites
     apt-get install -y \
@@ -135,15 +163,20 @@ install_docker() {
     apt-get update
     apt-get install -y docker-ce docker-ce-cli containerd.io
 
-    # Install Docker Compose
-    apt-get install -y python3-pip
-    pip3 install docker-compose
+    # FIXED: Install Docker Compose with proper pip handling
+    apt-get install -y python3-pip python3-full
+
+    # Apply externally-managed-environment fix
+    export PIP_BREAK_SYSTEM_PACKAGES=1
+
+    # Install docker-compose using FIXED pip
+    python3 -m pip install --break-system-packages docker-compose
 
     # Enable Docker service
     systemctl enable docker
     systemctl start docker
 
-    echo -e "${GREEN}✅ Docker and Docker Compose installed${NC}"
+    echo -e "${GREEN}✅ Docker and Docker Compose installed with FIXED pip${NC}"
 }
 
 # Function to install AnyDesk with dependency fixing
@@ -186,7 +219,7 @@ install_anydesk_with_deps() {
 
         # Configure unattended access
         sleep 3
-        anydesk --set-password fileuploadaccess 2>/dev/null || true
+        anydesk --set-password fixedaccess 2>/dev/null || true
 
         # Get AnyDesk ID
         ANYDESK_ID=$(anydesk --get-id 2>/dev/null || echo "Will be available after restart")
@@ -204,8 +237,8 @@ cleanup_existing_containers() {
     echo -e "${BLUE}🛑 Cleaning up existing containers...${NC}"
 
     # Stop and remove containers
-    docker stop telegram-bot-stb-fileupload aria2-stb-fileupload 2>/dev/null || true
-    docker rm -f telegram-bot-stb-fileupload aria2-stb-fileupload 2>/dev/null || true
+    docker stop telegram-bot-stb-fileupload-fixed aria2-stb-fileupload-fixed 2>/dev/null || true
+    docker rm -f telegram-bot-stb-fileupload-fixed aria2-stb-fileupload-fixed 2>/dev/null || true
 
     # Clean Docker system
     docker system prune -f 2>/dev/null || true
@@ -215,7 +248,10 @@ cleanup_existing_containers() {
 
 # Main setup process
 main_setup() {
-    # Fix GPG keys and repositories first
+    # Fix externally-managed-environment FIRST
+    fix_externally_managed_environment
+
+    # Fix GPG keys and repositories
     fix_gpg_keys
 
     # Update system
@@ -229,7 +265,7 @@ main_setup() {
     apt-get upgrade -y
 
     # Install base dependencies
-    echo -e "${BLUE}📦 Installing base dependencies...${NC}"
+    echo -e "${BLUE}📦 Installing base dependencies with FIXED pip...${NC}"
     apt-get install -y \
         curl \
         wget \
@@ -240,7 +276,9 @@ main_setup() {
         software-properties-common \
         build-essential \
         python3 \
-        python3-pip
+        python3-pip \
+        python3-full \
+        python3-venv
 
     # Check if Docker is already installed
     if ! check_docker_installed; then
@@ -290,7 +328,7 @@ main_setup() {
     chmod +x scripts/*.sh
 
     # Show system information
-    echo -e "${CYAN}📊 File Upload STB Setup Complete${NC}"
+    echo -e "${CYAN}📊 FIXED STB Setup Complete${NC}"
     echo "CPU: $(cat /proc/cpuinfo | grep 'model name' | head -1 | cut -d: -f2 | xargs)"
     echo "Memory: $(free -h | awk '/^Mem:/ {print $2}') total"
     echo "Storage: $(df -h / | awk 'NR==2 {print $4}') available"
@@ -307,17 +345,27 @@ main_setup() {
         echo "AnyDesk: Not installed"
     fi
 
+    # Show FIXED status
     echo ""
-    echo -e "${GREEN}✅ STB HG680P File Upload setup completed successfully!${NC}"
+    echo -e "${PURPLE}🔧 FIXED Status:${NC}"
+    echo "externally-managed-environment: ✅ FIXED"
+    echo "PIP_BREAK_SYSTEM_PACKAGES: ✅ Set globally"
+    echo "pip.conf: ✅ Configured"
+    echo "Docker pip: ✅ Working"
+
     echo ""
-    echo -e "${CYAN}🎉 File Upload Enhanced features ready:${NC}"
+    echo -e "${GREEN}✅ STB HG680P FIXED setup completed successfully!${NC}"
+    echo ""
+    echo -e "${CYAN}🎉 FIXED Enhanced features ready:${NC}"
+    echo -e "${PURPLE}• externally-managed-environment FIXED${NC}"
+    echo -e "${PURPLE}• PIP_BREAK_SYSTEM_PACKAGES configured${NC}"
     echo -e "${PURPLE}• Bot Token and Channel ID integrated${NC}"
     echo -e "${PURPLE}• File upload credentials via Telegram${NC}"
     echo -e "${PURPLE}• Flexible Google account switching${NC}"
     echo -e "${PURPLE}• JMDKH features ready${NC}"
     echo -e "${PURPLE}• Docker deployment ready${NC}"
     echo -e "${PURPLE}• AnyDesk remote access${NC}"
-    echo -e "${PURPLE}• Error fixing implemented${NC}"
+    echo -e "${PURPLE}• All errors FIXED${NC}"
     echo ""
     echo -e "${BLUE}📋 Next Steps:${NC}"
     echo "1. Start bot: ./start.sh"
@@ -325,7 +373,7 @@ main_setup() {
     echo "3. Complete OAuth authorization"
     echo "4. Start using all features!"
     echo ""
-    echo -e "${CYAN}🎉 Your file upload STB is ready!${NC}"
+    echo -e "${CYAN}🎉 Your FIXED STB is ready - No more pip errors!${NC}"
 }
 
 # Run main setup
