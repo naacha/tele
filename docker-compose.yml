@@ -14,7 +14,6 @@ services:
       - ./data:/app/data
       - ./credentials:/app/credentials
       - ./downloads:/app/downloads
-    networks:
-      - net
+    networks: [net]
 networks:
   net:

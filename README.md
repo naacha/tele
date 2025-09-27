@@ -1,2 +1,1 @@
-# STB Bot CLI Bookworm
-Deploy: unzip, edit .env with BOT_TOKEN, run setup.sh (as root), then docker compose build && docker compose up -d. Use /auth etc.
+CLI-only bot bookworm. Steps: unzip, edit .env, sudo ./setup.sh, ./start.sh, telegram /auth etc.
