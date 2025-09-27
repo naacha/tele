@@ -1,49 +1,4 @@
-# Requirements for STB HG680P FIXED externally-managed-environment
-# Python 3.9 compatible versions - FIXED for externally-managed-environment
-
-# Core Telegram Bot
 python-telegram-bot==20.7
-
-# HTTP requests and downloads
-requests==2.31.0
-aiohttp==3.8.6
-httpx==0.24.1
-
-# Google Drive API
 google-auth==2.17.3
 google-auth-oauthlib==0.7.1
 google-api-python-client==2.88.0
-
-# JMDKH Enhanced Features
-aria2p==0.11.3
-qbittorrent-api==2023.5.56
-
-# File handling and utilities
-python-magic==0.4.27
-tqdm==4.65.0
-humanize==4.6.0
-
-# System utilities
-psutil==5.9.5
-
-# Security and certificates
-certifi>=2023.5.7
-cryptography>=41.0.0
-
-# JSON and data handling
-ujson==5.7.0
-pyyaml==6.0
-
-# Additional utilities
-pytz==2023.3
-python-dateutil==2.8.2
-
-# Web scraping for direct links
-beautifulsoup4==4.12.2
-lxml==4.9.2
-
-# Progress tracking
-rich==13.3.5
-
-# GUI support libraries (minimal)
-Pillow==9.5.0
