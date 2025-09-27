@@ -1,5 +1,5 @@
-# Requirements for STB HG680P Multi-Version Support
-# Compatible with Python 3.9 (Bullseye) and Python 3.11 (Bookworm)
+# Requirements for STB HG680P File Upload Credentials Support
+# Python 3.9 compatible versions
 
 # Core Telegram Bot
 python-telegram-bot==20.7
@@ -9,7 +9,7 @@ requests==2.31.0
 aiohttp==3.8.6
 httpx==0.24.1
 
-# Google Drive API - Multi-version compatible
+# Google Drive API
 google-auth==2.17.3
 google-auth-oauthlib==0.7.1
 google-api-python-client==2.88.0

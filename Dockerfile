@@ -1,17 +1,11 @@
-# Multi-Version Dockerfile for STB HG680P - Bullseye & Bookworm Support
-FROM --platform=linux/arm64 python:3.9-slim-bullseye as bullseye-base
-FROM --platform=linux/arm64 python:3.11-slim-bookworm as bookworm-base
-
-# Use bullseye as default, can be overridden at build time
-ARG BASE_OS=bullseye
-FROM ${BASE_OS}-base
+# Dockerfile for STB HG680P with File Upload Credentials Support
+FROM --platform=linux/arm64 python:3.9-slim-bullseye
 
 # Metadata
-LABEL maintainer="STB HG680P Multi-Version Telegram Bot"
-LABEL description="Telegram bot for STB HG680P with Armbian 20.11 Bullseye & 25.11 Bookworm support"
-LABEL base_os_support="bullseye,bookworm"
-LABEL anydesk_support="yes"
-LABEL error_fixing="enabled"
+LABEL maintainer="STB HG680P File Upload Telegram Bot"
+LABEL description="Telegram bot for STB HG680P with file upload credentials.json support"
+LABEL file_upload_support="yes"
+LABEL credential_management="telegram_based"
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1
@@ -21,7 +15,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
-# Install system dependencies with multi-version support
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
@@ -73,11 +67,12 @@ RUN chmod +x /app/bot.py && \
     chmod -R 777 /app/data && \
     chmod -R 777 /app/downloads && \
     chmod -R 777 /app/logs && \
-    chmod -R 777 /app/torrents
+    chmod -R 777 /app/torrents && \
+    chmod -R 700 /app/credentials
 
-# Health check for multi-version support
+# Health check for file upload support
 HEALTHCHECK --interval=30s --timeout=15s --start-period=90s --retries=3 \
-    CMD python -c "print('STB Multi-Version Health OK'); exit(0)" || exit 1
+    CMD python -c "print('STB File Upload Health OK'); exit(0)" || exit 1
 
 # Expose ports
 EXPOSE 8080 6800

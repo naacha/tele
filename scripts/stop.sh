@@ -1,14 +1,15 @@
 #!/bin/bash
-# Multi-Version STB Stop Script
+# File Upload STB Stop Script
 
 cd "$(dirname "$0")"
 
-echo "🛑 Stopping Multi-Version STB Telegram Bot..."
-echo "🖥️ Stopping multi-OS services..."
+echo "🛑 Stopping File Upload STB Telegram Bot..."
+echo "🖥️ Stopping file upload services..."
 
 docker-compose down
-docker stop telegram-bot-stb-multi aria2-stb-multi 2>/dev/null || true
+docker stop telegram-bot-stb-fileupload aria2-stb-fileupload 2>/dev/null || true
 
-echo "✅ Multi-Version STB Bot stopped"
+echo "✅ File Upload STB Bot stopped"
 echo "💾 Data preserved"
+echo "📄 credentials.json preserved"
 echo "🔄 Use ./start.sh to restart"

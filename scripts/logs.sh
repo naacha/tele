@@ -1,8 +1,8 @@
 #!/bin/bash
-# Multi-Version STB Logs Script
+# File Upload STB Logs Script
 
-echo "📋 Multi-Version STB HG680P Bot Logs"
-echo "🖥️ Support: Armbian 20.11 Bullseye & 25.11 Bookworm"
+echo "📋 File Upload STB HG680P Bot Logs"
+echo "🖥️ Enhanced with Telegram File Upload for credentials.json"
 echo "Press Ctrl+C to exit"
 echo ""
 

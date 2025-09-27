@@ -1,5 +1,5 @@
 #!/bin/bash
-# Multi-Version STB HG680P Start Script
+# STB HG680P Start Script with File Upload Credentials Support
 
 cd "$(dirname "$0")"
 
@@ -11,9 +11,9 @@ CYAN='\033[0;36m'
 PURPLE='\033[0;35m'
 NC='\033[0m'
 
-echo -e "${CYAN}🚀 Starting Multi-Version STB HG680P Bot${NC}"
-echo -e "${CYAN}========================================${NC}"
-echo -e "${PURPLE}🖥️ Support: Armbian 20.11 Bullseye & 25.11 Bookworm${NC}"
+echo -e "${CYAN}🚀 Starting STB HG680P Bot - File Upload Credentials${NC}"
+echo -e "${CYAN}================================================${NC}"
+echo -e "${PURPLE}🖥️ Enhanced with Telegram File Upload for credentials.json${NC}"
 echo ""
 
 # Load environment variables
@@ -24,69 +24,29 @@ else
     exit 1
 fi
 
-# Detect OS version
-detect_os_version() {
-    DETECTED_VERSION="Unknown"
-    DETECTED_BASE="bullseye"
-    DETECTED_BOARD="HG680P"
-
-    if [ -f "/etc/armbian-release" ]; then
-        source /etc/armbian-release
-        DETECTED_VERSION="$VERSION"
-        DETECTED_BOARD="$BOARD"
-
-        if [[ "$VERSION" == *"20.11"* ]] || [[ "$VERSION" == *"bullseye"* ]]; then
-            DETECTED_BASE="bullseye"
-        elif [[ "$VERSION" == *"25.11"* ]] || [[ "$VERSION" == *"bookworm"* ]]; then
-            DETECTED_BASE="bookworm"
-        fi
-    fi
-
-    # Double-check with lsb_release
-    if command -v lsb_release &> /dev/null; then
-        LSB_CODENAME=$(lsb_release -cs 2>/dev/null || echo "")
-        if [ -n "$LSB_CODENAME" ]; then
-            if [ "$LSB_CODENAME" = "bookworm" ] || [ "$LSB_CODENAME" = "bullseye" ]; then
-                DETECTED_BASE="$LSB_CODENAME"
-            fi
-        fi
-    fi
-}
-
 # Force stop existing containers
 echo -e "${BLUE}🛑 Force stopping existing containers...${NC}"
-docker stop telegram-bot-stb-multi aria2-stb-multi 2>/dev/null || true
-docker rm -f telegram-bot-stb-multi aria2-stb-multi 2>/dev/null || true
-
-# Detect OS version
-detect_os_version
+docker stop telegram-bot-stb-fileupload aria2-stb-fileupload 2>/dev/null || true
+docker rm -f telegram-bot-stb-fileupload aria2-stb-fileupload 2>/dev/null || true
 
 # Show integrated credentials
 echo -e "${GREEN}✅ Bot Token: Integrated${NC}"
 echo -e "${GREEN}✅ Channel ID: Integrated${NC}"
-echo -e "${PURPLE}✅ Multi-Version Support: Ready${NC}"
+echo -e "${PURPLE}✅ File Upload Credentials: Ready${NC}"
 
-echo -e "${BLUE}📱 Detected System:${NC}"
-echo "Armbian Version: $DETECTED_VERSION"
-echo "Base OS: $DETECTED_BASE"
-echo "Board: $DETECTED_BOARD"
-echo "Architecture: $(uname -m)"
+# Check system info
+if [ -f "/etc/armbian-release" ]; then
+    source /etc/armbian-release
+    echo -e "${BLUE}📱 Armbian: $VERSION ($BRANCH)${NC}"
+    echo -e "${BLUE}📱 Board: $BOARD${NC}"
+fi
 
-# Set auth method based on OS
-if [ "$DETECTED_BASE" = "bookworm" ]; then
-    AUTH_METHOD="env_tokens"
-    echo -e "${BLUE}🔑 Auth Method: Environment Tokens (Bookworm)${NC}"
+# Check credentials file status
+if [ -f "credentials/credentials.json" ]; then
+    CREDS_SIZE=$(stat -c%s "credentials/credentials.json")
+    echo -e "${GREEN}📄 credentials.json: Ready (${CREDS_SIZE} bytes)${NC}"
 else
-    AUTH_METHOD="credentials_file"
-    echo -e "${BLUE}🔑 Auth Method: Credentials File (Bullseye)${NC}"
-fi
-
-# Update .env with detected values
-if ! grep -q "ARMBIAN_BASE_OS=" .env; then
-    echo "ARMBIAN_BASE_OS=$DETECTED_BASE" >> .env
-fi
-if ! grep -q "AUTH_METHOD=" .env; then
-    echo "AUTH_METHOD=$AUTH_METHOD" >> .env
+    echo -e "${YELLOW}📄 credentials.json: Not uploaded (use /auth in bot)${NC}"
 fi
 
 # Check GUI availability
@@ -163,10 +123,8 @@ if [ $OAUTH_PORT -ne $ORIGINAL_PORT ]; then
 fi
 
 echo ""
-echo -e "${BLUE}📱 Multi-Version STB Information:${NC}"
+echo -e "${BLUE}📱 File Upload STB Information:${NC}"
 echo "Model: HG680P"
-echo "OS: Armbian $DETECTED_VERSION"
-echo "Base: $DETECTED_BASE"
 echo "Architecture: $(uname -m)"
 echo "OAuth Port: $OAUTH_PORT"
 echo "Aria2 Port: 6800"
@@ -178,17 +136,19 @@ if [ "$ANYDESK_ID" != "Not available" ]; then
 fi
 
 echo ""
-echo -e "${PURPLE}🌟 Multi-Version Enhanced Features:${NC}"
-echo "✅ OS auto-detection and compatibility"
-echo "✅ Error fixing and dependency resolution"
-echo "✅ Multi-auth method support"
+echo -e "${PURPLE}🌟 File Upload Enhanced Features:${NC}"
+echo "✅ Upload credentials.json via Telegram"
+echo "✅ Replace Google accounts easily"
+echo "✅ No SSH access needed for credentials"
+echo "✅ Automatic file validation and placement"
+echo "✅ Secure file permissions (chmod 600)"
 echo "✅ AnyDesk Remote Access"
 echo "✅ JMDKH Features (Torrent, Mirror, Clone)"
-echo "✅ Channel Subscription Protection"
 
 # Create directories
 mkdir -p data downloads logs credentials torrents aria2-config
 chmod -R 755 data downloads logs credentials torrents aria2-config
+chmod -R 700 credentials  # More secure for credentials
 
 # Configure X11 for GUI support if available
 if [ "$GUI_STATUS" = "Available" ]; then
@@ -201,23 +161,23 @@ if [ "$GUI_STATUS" = "Available" ]; then
 fi
 
 # Build and start services
-echo -e "${BLUE}🔨 Building multi-version optimized Docker images...${NC}"
-BASE_OS=$DETECTED_BASE docker-compose build --no-cache --build-arg BASE_OS=$DETECTED_BASE
+echo -e "${BLUE}🔨 Building file upload optimized Docker images...${NC}"
+docker-compose build --no-cache
 
-echo -e "${BLUE}🚀 Starting multi-version STB services...${NC}"
-OAUTH_PORT=$OAUTH_PORT BASE_OS=$DETECTED_BASE docker-compose up -d
+echo -e "${BLUE}🚀 Starting file upload STB services...${NC}"
+OAUTH_PORT=$OAUTH_PORT docker-compose up -d
 
 # Wait for services
-echo -e "${BLUE}⏳ Waiting for multi-version services to initialize...${NC}"
+echo -e "${BLUE}⏳ Waiting for file upload services to initialize...${NC}"
 sleep 25
 
 # Check services
 if docker-compose ps | grep -q "Up"; then
     echo ""
-    echo -e "${GREEN}✅ Multi-Version STB Telegram Bot started successfully!${NC}"
+    echo -e "${GREEN}✅ STB File Upload Telegram Bot started successfully!${NC}"
     echo ""
 
-    echo -e "${BLUE}📊 Multi-Version Service Status:${NC}"
+    echo -e "${BLUE}📊 File Upload Service Status:${NC}"
     docker-compose ps
     echo ""
 
@@ -236,35 +196,34 @@ if docker-compose ps | grep -q "Up"; then
     fi
 
     echo ""
-    echo -e "${CYAN}🎉 Multi-Version Bot ready with enhanced features!${NC}"
+    echo -e "${CYAN}🎉 File Upload Bot ready with enhanced features!${NC}"
     echo ""
     echo -e "${GREEN}✅ Integrated Credentials:${NC}"
     echo "• Bot Token: 8436081597:AAE-8bfWrbvhl26-l9y65p48DfWjQOYPR2A"
     echo "• Channel: @ZalheraThink (ID: -1001802424804)"
     echo ""
-    echo -e "${PURPLE}🌟 Multi-Version Enhanced Commands:${NC}"
+    echo -e "${PURPLE}🌟 File Upload Enhanced Commands:${NC}"
+    echo "• /auth - Upload credentials.json & connect Drive"
+    echo "• /setcreds - Replace existing credentials.json"
     echo "• /d [link] - Mirror to Google Drive"
     echo "• /t [torrent] - Download torrent/magnet"
     echo "• /dc [gdrive] - Clone Google Drive"
-    echo "• /auth - Connect Google Drive ($AUTH_METHOD)"
-    echo "• /anydesk - Remote access info"
-    echo "• /system - Multi-version system info"
+    echo "• /system - File upload system info"
     echo ""
 
-    echo -e "${BLUE}🐛 OS-Specific Information:${NC}"
-    echo "• Detected: $DETECTED_BASE ($DETECTED_VERSION)"
-    echo "• Auth Method: $AUTH_METHOD"
-    if [ "$DETECTED_BASE" = "bookworm" ]; then
-        echo "• Google Auth: Use GOOGLE_CLIENT_ID/SECRET in .env"
-    else
-        echo "• Google Auth: Use credentials.json OR env variables"
-    fi
+    echo -e "${BLUE}📄 File Upload Instructions:${NC}"
+    echo "1. Use /auth command in bot"
+    echo "2. Upload credentials.json when requested"
+    echo "3. Complete OAuth authorization"
+    echo "4. Start using all features!"
+    echo ""
+    echo "💡 To switch Google accounts: Use /setcreds"
 
     if [ "$ANYDESK_STATUS" = "active" ] && [ "$ANYDESK_ID" != "Not available" ]; then
         echo ""
         echo -e "${PURPLE}🖥️ Remote Access Ready:${NC}"
         echo "• AnyDesk ID: $ANYDESK_ID"
-        echo "• Password: stbaccess"
+        echo "• Password: fileuploadaccess"
         echo "• GUI Access: $GUI_TYPE"
         echo "• Connect via AnyDesk client"
     fi
@@ -276,12 +235,12 @@ if docker-compose ps | grep -q "Up"; then
     echo "./logs.sh    - View live logs"
     echo "./stop.sh    - Stop the bot"
     echo "./restart.sh - Restart the bot"
-    echo "./status.sh  - Check multi-version status"
+    echo "./status.sh  - Check file upload status"
     echo ""
 
 else
     echo ""
-    echo -e "${RED}❌ Failed to start Multi-Version STB Bot${NC}"
+    echo -e "${RED}❌ Failed to start File Upload STB Bot${NC}"
     echo ""
     echo -e "${BLUE}🔍 Checking logs:${NC}"
     docker-compose logs --tail=20

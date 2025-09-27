@@ -1,215 +1,191 @@
-# STB HG680P Telegram Bot - Multi-Version Armbian Support
+# STB HG680P Telegram Bot - File Upload credentials.json
 
-## 🖥️ Enhanced Multi-Version Support
+## 🎯 Revolutionary File Upload Credentials Management
 
-### ✅ Supported Armbian Versions:
-- **🐛 Armbian 20.11 Bullseye** - credentials.json or env tokens
-- **🐛 Armbian 25.11 Bookworm** - env tokens required
-- **🔧 Error Fixing** - GPG keys, dependencies, broken packages
-- **🌟 JMDKH Features** - Torrent, mirror, clone capabilities
-- **🔗 AnyDesk Integration** - With dependency resolution
+### ✅ Key Features:
+- **📄 Upload credentials.json via Telegram** - No SSH access needed
+- **🔄 Easy Google account switching** - Perfect when Drive is full
+- **🔒 Automatic file validation** - JSON format & structure checking
+- **🔧 Secure file handling** - chmod 600, proper permissions
+- **⚡ Commands blocked until auth** - Clean user experience
+- **🌟 All JMDKH features** - Torrent, mirror, clone capabilities
 
 ### ✅ Pre-configured Credentials:
 - **Bot Token:** `8436081597:AAE-8bfWrbvhl26-l9y65p48DfWjQOYPR2A`
 - **Channel ID:** `-1001802424804` (@ZalheraThink)
 
-## 📋 Multi-Version Deployment
+## 📋 Quick Deployment
 
 ### 1. Extract and Setup
 ```bash
-unzip telegram-bot-stb-armbian-multi-version.zip
-cd telegram-bot-stb-armbian-multi-version
-sudo ./setup.sh  # Auto-detects OS version and fixes errors
+unzip telegram-bot-stb-file-upload-complete.zip
+cd telegram-bot-stb-file-upload-complete
+sudo ./setup.sh
 ```
 
-**What the setup fixes:**
-- **GPG Key Errors** - Fixes missing Debian archive keys
-- **Broken Dependencies** - Resolves AnyDesk libgtkglext1 issues
-- **Repository Issues** - Updates archive.debian.org to current repos
-- **Docker Detection** - Skips installation if already present
-- **AnyDesk Dependencies** - Installs required GUI libraries
+**What gets fixed/installed:**
+- GPG key errors resolved
+- AnyDesk dependency issues fixed
+- Docker + Docker Compose (ARM64)
+- Enhanced system tools
 
-### 2. Configuration by OS Version
-
-#### For Armbian 25.11 Bookworm:
-```bash
-nano .env
-# REQUIRED for Bookworm:
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-```
-
-#### For Armbian 20.11 Bullseye:
-```bash
-# Option 1: Use credentials.json file
-mkdir -p credentials
-# Place your credentials.json in ./credentials/
-
-# Option 2: Use environment variables
-nano .env
-GOOGLE_CLIENT_ID=your_google_client_id  # Optional for Bullseye
-GOOGLE_CLIENT_SECRET=your_google_client_secret  # Optional for Bullseye
-```
-
-### 3. Start Multi-Version Bot
+### 2. Start Bot
 ```bash
 ./start.sh
-# ✅ Auto-detects Armbian version
-# ✅ Sets appropriate auth method
-# ✅ Docker Compose deployment only
 ```
 
-## 🔧 Error Fixing Features
+### 3. Upload Credentials via Telegram
+1. Start bot → `/start` → `/auth`
+2. Bot requests: "📄 Upload credentials.json file"
+3. Upload your credentials.json file in chat
+4. Bot validates → saves → provides OAuth link
+5. Complete OAuth → `/code [authorization-code]`
+6. Ready to use all features!
 
-### GPG Key Error Resolution:
-**Error Fixed:**
-```
-W: GPG error: http://archive.debian.org/debian bullseye InRelease: 
-The following signatures couldn't be verified because the public key is not available: 
-NO_PUBKEY 0E98404D386FA1D9 NO_PUBKEY 6ED0E7B82643E131
-```
+## 🔄 Easy Google Account Switching
 
-**Solution Applied:**
-```bash
-# Add missing keys
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0E98404D386FA1D9
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6ED0E7B82643E131
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 605C66F00D6C9793
+### When Drive Storage is Full:
+1. Get new Google account
+2. Create new credentials.json in Cloud Console
+3. Send new file to bot (any time)
+4. Bot automatically replaces old file
+5. Run `/auth` again → connected to new account
 
-# Update repository sources from archive to current
+### Multiple Account Management:
 ```
+User: *uploads credentials.json (Account A)*
+Bot: ✅ credentials.json uploaded. Use /auth to connect.
 
-### AnyDesk Dependency Error Resolution:
-**Error Fixed:**
-```
-anydesk : Depends: libgtkglext1 but it is not installed
-E: Unmet dependencies. Try 'apt --fix-broken install'
-```
-
-**Solution Applied:**
-```bash
-# Install dependencies first
-apt-get install -y libgtkglext1 libgtkglext1-dev libglib2.0-0 libgtk2.0-0
-# Then install AnyDesk
-apt-get install -y anydesk
+# After some time, Drive full...
+User: *uploads credentials.json (Account B)*  
+Bot: 🔄 File replaced. Old connection cleared. Use /auth for new account.
 ```
 
-## 🎯 OS-Specific Features
+## 📱 Complete Command List
 
-### Armbian 20.11 Bullseye:
-- **Auth Method:** credentials.json file OR env tokens
-- **Python Version:** 3.9
-- **Docker Base:** python:3.9-slim-bullseye
-- **GUI Libraries:** Standard Debian Bullseye packages
+| Command | Function | Notes |
+|---------|----------|-------|
+| `/start` | Welcome & system info | Shows credentials status |
+| `/auth` | Upload credentials.json & connect | Requests file if not uploaded |
+| `/setcreds` | Manual credential replacement | Same as uploading directly |
+| `/code <auth-code>` | Complete OAuth authorization | After uploading file |
+| `/d <link>` | Mirror to Google Drive | Blocked until Drive connected |
+| `/t <magnet/torrent>` | Torrent to Google Drive | Blocked until Drive connected |
+| `/dc <gdrive-url>` | Clone Google Drive | Blocked until Drive connected |
+| `/system` | System info + credentials status | File upload specific info |
+| `/anydesk` | AnyDesk remote access info | |
+| `/stats` | Bot usage statistics | |
+| `/help` | Complete help with file upload | |
 
-### Armbian 25.11 Bookworm:
-- **Auth Method:** Environment tokens (REQUIRED)
-- **Python Version:** 3.11
-- **Docker Base:** python:3.11-slim-bookworm
-- **GUI Libraries:** Updated Bookworm packages with non-free-firmware
+## 🎯 File Upload Process (Detailed)
 
-## 🔍 Expected Results
-
-### Successful Multi-Version Setup:
-```bash
-📱 Detected System:
-Armbian Version: 20.11.1 Bullseye
-Base OS: bullseye
-Board: HG680P
-Architecture: aarch64
-
-🔑 Fixing GPG key errors...
-✅ GPG keys and repositories fixed
-
-🔧 Fixing broken packages...
-✅ Broken packages fixed
-
-🖥️ Installing AnyDesk with dependency fixing for bullseye...
-📦 Installing AnyDesk dependencies...
-✅ AnyDesk installed successfully
-🆔 AnyDesk ID: 123456789
+### First Time Setup:
+```
+1. User: /auth
+2. Bot: 📄 Upload credentials.json file
+3. User: *uploads file*
+4. Bot: ✅ File processed. Here's OAuth link: [URL]
+5. User: *clicks link* → *authorizes* → *copies code*
+6. User: /code 4/0AdQt8qi...
+7. Bot: ✅ Google Drive Connected Successfully!
 ```
 
-### Working Multi-Version Commands:
+### Account Switching:
 ```
-User: /start
-Bot: 🚀 STB Telegram Bot - HG680P Multi-Version Support
-     🐛 Base OS: Bullseye
-     🔑 Auth Method: Credentials File (Bullseye)
+1. User: *uploads new credentials.json*
+2. Bot: 🔄 File replaced. Old connection cleared.
+3. User: /auth  
+4. Bot: 🔗 OAuth link: [URL] (for new account)
+5. User: *completes auth*
+6. Bot: Connected to new Google account!
+```
 
+### File Validation:
+- **Size check:** < 100KB
+- **Name check:** Must be exactly "credentials.json"
+- **JSON validation:** Proper structure required
+- **Format check:** Desktop application credentials
+
+## 🔒 Security Features
+
+### File Security:
+- Downloaded to `/tmp` first for validation
+- Moved to `/app/credentials/` with chmod 600
+- Only container can access the file
+- Old credentials automatically cleared
+
+### Validation Process:
+```python
+def validate_credentials_file(file_path):
+    # Check JSON format
+    # Verify 'installed' section exists
+    # Validate required fields
+    # Return detailed error messages
+```
+
+## 🔧 Expected Results
+
+### Successful File Upload:
+```
+User: *uploads credentials.json*
+Bot: ⏳ Processing credentials.json...
+     ✅ credentials.json Uploaded Successfully!
+
+     📄 File processed:
+     • File validated and saved
+     • Secure permissions applied (chmod 600)
+     • Ready for authentication
+
+     🔗 Authorization Link:
+     https://accounts.google.com/o/oauth2/auth?...
+```
+
+### System Status:
+```
 User: /system
-Bot: 💻 STB HG680P Multi-Version System Information
-     🐧 Multi-Version Armbian Information:
-     • Version: 20.11.1 Bullseye
-     • Base OS: Bullseye
-     • Auth Method: Credentials File
+Bot: 💻 STB HG680P System Information - File Upload Credentials
 
-User: /auth (on Bullseye)
-Bot: 🔐 Google Drive Authentication - Multi-Version Support
-     🐛 Detected OS: Bullseye
-     🔑 Auth Method: Credentials File
+     📄 Credentials Status:
+     • credentials.json: ✅ Uploaded & Ready
+     • File size: 2847 bytes
+     • Google Drive: ✅ Connected
+
+     🌟 File Upload Features:
+     • Upload credentials via Telegram: ✅ Active
+     • Replace Google accounts easily: ✅ Active
 ```
 
-## 🐳 Docker Compose Only Deployment
+## 🎉 Advantages
 
-### Multi-Container Architecture:
-```yaml
-services:
-  telegram-bot:
-    container_name: telegram-bot-stb-multi
-    build:
-      args:
-        BASE_OS: ${DETECTED_BASE}  # bullseye or bookworm
+### No More SSH:
+- ❌ No `scp credentials.json root@stb:/path/`
+- ❌ No manual file permissions
+- ❌ No container restarts needed
+- ✅ Everything through Telegram chat
 
-  aria2:
-    container_name: aria2-stb-multi
-```
+### Easy Account Management:
+- ✅ Switch accounts in seconds
+- ✅ Perfect for Drive storage limits
+- ✅ Multiple Google accounts supported
+- ✅ Automatic credential replacement
 
-### No Direct Docker/CLI Usage:
-- **✅ Docker Compose Only** - All deployments through compose
-- **❌ No docker run commands** - Simplified management
-- **❌ No direct CLI execution** - Container-based operation
-- **✅ Service orchestration** - Proper dependency management
+### Enhanced Security:
+- ✅ File validation before use
+- ✅ Secure permissions (chmod 600)
+- ✅ Automatic cleanup of old tokens
+- ✅ Container-based isolation
 
-## 📱 Multi-Version Remote Access
+## ✅ All Features Working
 
-### AnyDesk with Dependency Fixing:
-1. **Auto-dependency resolution** - Installs libgtkglext1 and related
-2. **OS-specific packages** - Different packages for Bullseye/Bookworm  
-3. **Fallback installation** - Uses .deb file if repo fails
-4. **Service configuration** - Auto-configures unattended access
+- ✅ **File Upload via Telegram** - Upload credentials.json directly
+- ✅ **Automatic Validation** - JSON format & structure checking
+- ✅ **Secure File Handling** - chmod 600, proper permissions
+- ✅ **Easy Account Switching** - Replace Google accounts easily
+- ✅ **Commands Blocked Until Auth** - Clean UX, no confusing errors
+- ✅ **All JMDKH Features** - Torrent, mirror, clone intact
+- ✅ **AnyDesk Integration** - Remote access with dependency fixing
+- ✅ **Error Fixing** - GPG keys, repositories, dependencies
 
-### Connection Instructions:
-1. **Get AnyDesk ID:** Use `/anydesk` command
-2. **Password:** `stbaccess` (auto-configured)
-3. **GUI Access:** Whatever desktop is available on Armbian
-4. **Troubleshooting:** Built-in dependency fixing
+**🎉 Complete file upload solution - no SSH needed! 🚀**
 
-## ⚠️ Multi-Version Important Notes
-
-### Docker Installation:
-- **Auto-Detection** - Skips Docker install if already present
-- **Version Check** - Verifies Docker and Docker Compose versions
-- **ARM64 Support** - Installs correct architecture packages
-- **Service Management** - Enables and starts Docker service
-
-### Error Handling:
-- **GPG Key Recovery** - Automatic key server retrieval
-- **Repository Fallback** - Switches from archive to current repos
-- **Broken Package Fix** - Automatic dependency resolution
-- **Service Recovery** - Restarts failed services
-
-## ✅ All Multi-Version Features Working
-
-- ✅ **Armbian 20.11 Bullseye** - Full support with credentials.json
-- ✅ **Armbian 25.11 Bookworm** - Full support with env tokens  
-- ✅ **Error Fixing** - GPG keys, dependencies, repositories
-- ✅ **AnyDesk Installation** - With dependency resolution
-- ✅ **Docker Detection** - Skips if already installed
-- ✅ **Multi-Auth Support** - OS-appropriate authentication
-- ✅ **JMDKH Features** - Torrent, mirror, clone
-- ✅ **Docker Compose Only** - No direct CLI usage
-
-**🎉 Complete multi-version solution with comprehensive error fixing! 🚀**
-
-**Extract → Setup (Auto-Fix) → Configure → Deploy → All Versions Working! 🖥️**
+**Extract → Setup → Start → Upload credentials.json → Auth → Ready! 📄**
