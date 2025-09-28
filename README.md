@@ -1,1 +1,0 @@
-CLI-only bot bookworm. Steps: unzip, edit .env, sudo ./setup.sh, ./start.sh, telegram /auth etc.

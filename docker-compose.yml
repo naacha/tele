@@ -1,5 +1,5 @@
-
 version: '3.8'
+
 services:
   bot:
     build: .
@@ -14,6 +14,11 @@ services:
       - ./data:/app/data
       - ./credentials:/app/credentials
       - ./downloads:/app/downloads
-    networks: [net]
+      - ./logs:/app/logs
+      - ./torrents:/app/torrents
+    networks:
+      - bot-network
+
 networks:
-  net:
+  bot-network:
+    driver: bridge
