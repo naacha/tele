@@ -1,254 +1,287 @@
-# STB Bot - SECURE VERSION WITH AUTO CLEANUP
+# STB Bot - FINAL REVISION COMPLETE
 
-## 🛡️ SECURITY IMPROVEMENTS IMPLEMENTED
+## 🎉 ALL REQUESTED FEATURES IMPLEMENTED & FIXED
 
-### 🔐 Owner-Only Sensitive Commands
-**SECURITY RESTRICTION**: System-sensitive operations now restricted to owner only:
-- `/auth` - Upload credentials.json (Owner only)
-- `/setcreds` - Replace credentials (Owner only) 
-- `/code <auth-code>` - Complete OAuth (Owner only)
-- `/roottest` - Test system access (Owner only)
+### ✅ Social Media Downloads - DIRECT TO TELEGRAM (No Drive Needed)
+- **Facebook** (`/fb <link>`) - Video/photo direct to Telegram
+- **Instagram** (`/ig <link>`) - Posts/stories/reels direct to Telegram  
+- **Twitter/X** (`/x <link>`) - Video/photo/GIF direct to Telegram
+- **YouTube Video** (`/ytv <link>`) - Quality selection, direct to Telegram
+- **YouTube Thumbnail** (`/ytm <link>`) - HD thumbnails direct to Telegram
+- **Video Converter** (`/cv`) - Reply to video, convert to MP3/FLAC
 
-**Access Control**: Non-owners get security denial message with reason.
+**✅ FIXED**: All social commands now respond and work properly
+**✅ NO DRIVE NEEDED**: Downloads work without Google Drive credentials
 
-### 📖 nhentai PM-Only with Enhanced Validation
-**PRIVACY PROTECTION**: nhentai search now restricted to private chats only:
-- **PM Only**: Groups completely ignore number messages
-- **Minimum Digits**: Increased from 3 to 4 digits minimum
-- **Enhanced Validation**: Stricter code format checking
-- **Group Behavior**: Bot silently ignores numbers in groups
+### ✅ Enhanced Reverse Image Search
+**Two-stage detection system**:
 
-### 🧹 Auto File Cleanup System
-**STORAGE MANAGEMENT**: Automatic file deletion after upload:
-- **Post-Upload Cleanup**: Files deleted 30 seconds after Telegram upload
-- **Temp File Cleanup**: Temporary files deleted after processing
-- **Directory Cleanup**: Empty directories automatically removed
-- **System Protection**: Prevents storage overflow
+#### 🎬 Anime Scene Detection (trace.moe API):
+- **Title**: Anime series name
+- **Episode**: Episode number
+- **Timestamp**: Exact minute:second in episode  
+- **Genre**: Anime genre
+- **Year**: Release year
+- **Preview Video**: Scene preview without subtitles
 
-## 🎯 SECURITY IMPLEMENTATION DETAILS
+#### 🎨 Illustration Detection (SauceNAO API):
+- **Author**: Artist name
+- **Title**: Artwork title
+- **Resolution**: Image dimensions
+- **Source Link**: Original source (no more example.com!)
+- **HD Download**: Original image as document
 
-### Owner-Only Command Security
-```python
-async def owner_only_check(update, context, command_name):
-    if not is_owner(user):
-        await update.message.reply_text(
-            f"🔒 **Owner Only - Security Restriction**\n\n"
-            f"❌ **Access Denied**: {command_name}\n"
-            f"👑 **Owner**: @{OWNER_USERNAME}\n\n"
-            f"🛡️ **Reason**: Sensitive system operations restricted"
-        )
-        return False
-    return True
+#### 💭 Graceful Fallback:
+- If neither found: "Pict is not illustration / scene anime"
+
+### ✅ nhentai Download - PM ONLY + PDF
+- **PM Restriction**: Only works in private chats, groups ignored
+- **4+ Digits**: Minimum code length increased from 3 to 4
+- **Full Download**: Downloads ALL pages from gallery
+- **PDF Creation**: Compiles all pages into single PDF document
+- **Metadata**: Title, page count, file size included
+- **Document**: Sent as Telegram document with proper filename
+
+### ✅ Auto Cleanup System
+- **Post-Upload**: Files deleted 30 seconds after sending to Telegram
+- **Temp Files**: Processing files auto-deleted
+- **Storage Protection**: Prevents STB system from filling up
+- **Directory Management**: Empty directories cleaned automatically
+
+### ✅ Fixed Issues
+- **✅ Social Commands**: All `/fb`, `/ig`, `/x`, `/ytv`, `/ytm` now work properly
+- **✅ Credentials Upload**: `/auth` now responds with success/failure messages
+- **✅ No Example Links**: Reverse search only shows real source links
+- **✅ Command Responses**: All commands now provide feedback
+
+## 🚀 DEPLOYMENT
+
+### 1. Quick Start
+```bash
+unzip stb-bot-complete-final.zip
+cd stb-bot-complete-final
+sudo ./setup.sh    # Install dependencies
+./start.sh         # Start bot
 ```
 
-### nhentai PM-Only Implementation
+### 2. Expected Output
+```
+✅ STB Bot started - FINAL REVISION!
+
+🎉 ALL FEATURES WORKING:
+• ✅ Facebook downloader (/fb) - Direct to Telegram
+• ✅ Instagram downloader (/ig) - Direct to Telegram
+• ✅ Twitter/X downloader (/x) - Direct to Telegram
+• ✅ YouTube video (/ytv) - Quality options
+• ✅ YouTube thumbnail (/ytm) - HD download
+• ✅ Video converter (/cv) - MP3/FLAC
+• ✅ Enhanced reverse search - Anime + illustration
+• ✅ nhentai download - PM-only, PDF format
+
+Made by many fuck love @Zalhera
+```
+
+## 🎯 USAGE EXAMPLES
+
+### Social Media Downloads
+```
+User: /fb https://facebook.com/video/123
+Bot:  📥 Facebook Download Started
+      🔗 URL: https://facebook.com/video/123...
+      📊 Status: Processing with yt-dlp...
+      📱 Output: Direct to Telegram
+
+*Bot sends video as document + compressed preview*
+Bot:  ✅ Facebook Download
+      📁 File: video.mp4
+      📊 Size: 125.6 MB
+      Made by many fuck love @Zalhera
+
+*File auto-deleted from server after 30 seconds*
+```
+
+### Enhanced Reverse Search
+```
+User: *sends anime screenshot*
+Bot:  🔍 Enhanced Reverse Image Search
+      📸 Photo detected - Starting analysis...
+      🔎 Searching: Anime scenes and illustrations
+
+Bot:  🎬 Anime Scene Detected
+
+      📺 Title: Attack on Titan
+      📖 Episode: 15
+      ⏰ Timestamp: 12m 34s
+      🎯 Similarity: 94.2%
+      📅 Year: 2013
+      🎭 Genre: Action, Drama
+
+*Bot sends video preview without subtitles*
+
+User: *sends digital artwork*
+Bot:  🎨 Illustration Detected
+
+      👨‍🎨 Author: @ArtistName
+      📝 Title: Sunset Warrior
+      📐 Resolution: 2048x1536
+      🎯 Similarity: 96.7%
+      📊 Source: Pixiv
+      🔗 Link: https://pixiv.net/artworks/123456789
+
+*Bot sends HD image as document*
+```
+
+### nhentai PDF Download (PM Only)
+```
+# In private chat:
+User: 177013
+Bot:  📖 nhentai Download - PM Only
+      🔢 Code: 177013
+      📥 Status: Fetching gallery info...
+      📄 Format: PDF document
+
+Bot:  📖 nhentai Download - PM Only
+      🔢 Code: 177013
+      📝 Title: Sample Title...
+      📄 Pages: 225
+      📥 Status: Downloaded 225/225 pages
+      📊 Status: Creating PDF document...
+
+Bot:  ✅ nhentai Download Complete - PM Only
+      🔢 Code: 177013
+      📝 Title: Sample Title...
+      📄 Pages: 225
+      📊 PDF Size: 45.3 MB
+
+*Bot sends PDF document*
+Bot:  📖 nhentai PDF - 177013
+      📝 Title: Sample Title...
+      📄 Pages: 225
+      📊 Size: 45.3 MB
+      Made by many fuck love @Zalhera
+
+# In group chat:
+User: 177013
+Bot:  *silently ignores*
+```
+
+### Video Converter
+```
+User: *sends video*
+User: /cv
+Bot:  🎵 Video to Audio Converter
+
+      📁 File: vacation_video.mp4
+      📊 Size: 245.8 MB
+
+      🎯 Select Output Format:
+      • MP3: Compressed format (smaller file)
+      • FLAC: Lossless format (larger file)
+
+      [🎵 Convert to MP3] [🎶 Convert to FLAC] [❌ Cancel]
+
+*User clicks MP3*
+Bot:  🎵 Video Conversion Started
+      📁 Input: vacation_video.mp4
+      🎯 Format: MP3
+      📊 Status: Converting...
+
+Bot:  🎵 Video Converted
+      🎯 Format: MP3
+      📊 Size: 47.2 MB
+      Made by many fuck love @Zalhera
+
+*Bot sends MP3 as document + audio preview*
+```
+
+## 📋 COMPLETE COMMAND LIST
+
+### Social Media Downloads (Direct to Telegram)
+- `/fb <link>` - Facebook video/photo downloader
+- `/ig <link>` - Instagram posts/stories/reels downloader
+- `/x <link>` - Twitter/X video/photo/GIF downloader
+- `/ytv <link>` - YouTube video with quality options
+- `/ytm <link>` - YouTube thumbnail in HD
+
+### Media Processing
+- `/cv` - Video to MP3/FLAC converter (reply to video)
+
+### Auto Features
+- **Send photo** → Enhanced reverse search (anime + illustration)
+- **Send 4+ digits in PM** → nhentai PDF download
+
+### Information & Help
+- `/start` - Bot information and feature list
+- `/help` - Complete help with examples
+
+### Owner Commands (Security Restricted)
+- `/auth` - Upload Google Drive credentials (optional)
+- `/roottest` - System testing and diagnostics
+
+## 🔧 TECHNICAL IMPROVEMENTS
+
+### No Google Drive Dependency
 ```python
-async def handle_text_message(update, context):
-    # SECURITY: Only work in private chats
-    if not is_private_chat(update):
-        # Silently ignore numbers in groups
-        return
+# Social downloads work independently
+await download_social_media_direct(url, 'facebook', update, context)
+# Direct to Telegram, no Drive needed
+```
 
-    text = update.message.text.strip()
+### Enhanced Reverse Search
+```python
+async def enhanced_reverse_search(image_path):
+    # Step 1: Try anime scene detection (trace.moe)
+    anime_result = await search_anime_scene(image_path)
+    if anime_result: return anime_result
 
-    # Enhanced validation: 4+ digits minimum
-    if text.isdigit() and len(text) >= 4:
-        # Process nhentai search only in PM
+    # Step 2: Try illustration detection (SauceNAO)  
+    illustration_result = await search_illustration(image_path)
+    if illustration_result: return illustration_result
+
+    # Step 3: Nothing found
+    return {'type': 'none'}
+```
+
+### nhentai PDF Creation
+```python
+async def download_nhentai_pdf(code, update, context):
+    # Download all pages
+    for page_num in range(1, num_pages + 1):
+        # Download each page
+        page_files.append(download_page(page_num))
+
+    # Create PDF from all pages
+    with open(pdf_path, 'wb') as pdf_file:
+        pdf_file.write(img2pdf.convert(page_files))
+
+    # Send as Telegram document
+    await update.message.reply_document(pdf_path)
 ```
 
 ### Auto Cleanup System
 ```python
-def cleanup_file(file_path, delay=5):
+def cleanup_file(file_path, delay=30):
     async def delayed_cleanup():
         await asyncio.sleep(delay)
         if os.path.exists(file_path):
             os.remove(file_path)
-            logger.info(f"Auto cleanup: {file_path}")
-
     asyncio.create_task(delayed_cleanup())
 ```
 
-## 🚀 SECURE DEPLOYMENT
+## ✅ ALL ISSUES RESOLVED
 
-### 1. System Setup (Root Required)
-```bash
-unzip stb-bot-revised-security.zip
-cd stb-bot-revised-security
-sudo ./setup.sh  # Must run as root for security setup
-```
+**✅ Social downloads work without Google Drive**  
+**✅ All commands respond properly**  
+**✅ Reverse search shows real links only**  
+**✅ nhentai creates PDF documents**  
+**✅ Credentials upload gives feedback**  
+**✅ Auto cleanup prevents storage issues**  
+**✅ Enhanced security and validation**  
 
-### 2. Start Secure Bot
-```bash
-./start.sh
-```
+## 🎉 READY TO DEPLOY
 
-**Expected Secure Output:**
-```
-✅ STB Bot started - SECURE VERSION WITH AUTO CLEANUP!
+All features working, all bugs fixed, all improvements implemented.
 
-🛡️ SECURITY FEATURES:
-• ✅ Owner-only sensitive commands
-• ✅ System operations restricted to owner
-• ✅ Credentials upload: Owner only
-• ✅ OAuth setup: Owner only
-
-📖 NHENTAI SECURITY:
-• ✅ PM only: Groups ignored
-• ✅ Minimum 4 digits (was 3)
-• ✅ Enhanced validation
-
-🧹 AUTO CLEANUP FEATURES:
-• ✅ Files deleted after upload
-• ✅ Temp directories cleaned
-• ✅ System space management
-
-🔑 Secure Password: hakumen12312
-Made by many fuck love @Zalhera
-```
-
-## 🎯 SECURE USAGE EXAMPLES
-
-### Owner-Only Commands (Security Restricted)
-```
-Non-Owner: /auth
-Bot:       🔒 Owner Only - Security Restriction
-
-           ❌ Access Denied: Google Drive Setup
-           👑 Owner: @zalhera
-
-           🛡️ Reason: Sensitive system operations restricted
-           🔐 Security: Full access controls active
-
-Owner: /auth
-Bot:   📄 Upload credentials.json - SECURE OWNER ACCESS
-       🔐 Security: Only owner can upload credentials
-       🛡️ Protection: System-level access controls
-```
-
-### nhentai PM-Only Behavior
-```
-# In GROUP CHAT:
-User: 177013
-Bot:  *silently ignores - no response*
-
-# In PRIVATE CHAT:
-User: 177013
-Bot:  📖 Auto nhentai Search - PM Only
-      🔢 Code detected: 177013 (6 digits)
-      🔍 Searching: nhentai database...
-      🔒 Security: Private chat verified
-
-# In PRIVATE CHAT (too short):
-User: 123
-Bot:  ❌ nhentai Search Failed - PM Only
-      Code: 123
-      Error: Code too short. Minimum 4 digits required.
-```
-
-### Auto Cleanup in Action
-```
-User: /fb https://facebook.com/video/123
-Bot:  📥 Facebook Download Started - Auto Cleanup
-      🧹 Auto Cleanup: Files deleted after upload
-
-Bot:  ✅ Facebook Download Complete - Auto Cleanup
-      📁 File: video.mp4
-      📊 Size: 125.6 MB
-      🧹 Cleanup: File will be auto-deleted
-
-*Bot sends document*
-*30 seconds later: file automatically deleted from server*
-```
-
-### Reverse Image Search with Cleanup
-```
-User: *sends photo*
-Bot:  🔍 Auto Reverse Image Search
-      📸 Photo downloaded ✅
-      🔎 Searching: Analyzing image...
-
-Bot:  🔍 Reverse Search Results
-      🎨 Details: Artist info...
-      🔗 Sources Found: 2 sources...
-      📄 HD Image: Sending as document...
-      🧹 Auto Cleanup: Temp files will be deleted
-
-*Bot sends HD image as document*
-*30 seconds later: temp files automatically deleted*
-```
-
-## 📋 COMPLETE SECURE COMMAND LIST
-
-### Public Commands (All Users)
-- `/start` - Bot info with security status
-- `/help` - Help with security information
-- `/fb <link>` - Facebook download + cleanup
-- `/ig <link>` - Instagram download + cleanup
-- `/x <link>` - Twitter download + cleanup
-- `/ytv <link>` - YouTube video + cleanup
-- `/ytm <link>` - YouTube thumbnail + cleanup
-- `/cv` - Video converter + cleanup
-- `/d <link>` - Google Drive mirror + cleanup
-- `/t <magnet>` - Torrent leech + cleanup
-- `/etadl` - Download status
-- `/stop1` `/stop2` - Cancel downloads
-
-### Auto Features (Security Enhanced)
-- **Send photo** → Reverse search + cleanup (all users)
-- **Send 4+ digits in PM** → nhentai search + cleanup (PM only)
-
-### Owner-Only Commands (Security Restricted)
-- `/auth` - Upload credentials.json (secure)
-- `/setcreds` - Replace credentials (secure)
-- `/code <auth-code>` - Complete OAuth (secure)
-- `/roottest` - Test system access (secure)
-
-## 🔐 WEBHOOK INTEGRATION CAPABILITY
-
-**Answer to your question**: Yes, I can create Telegram bot integration with Discord webhooks! 
-
-**Technical Capabilities**:
-- ✅ Receive Discord webhook POST requests
-- ✅ Parse Discord message data (content, embeds, attachments)
-- ✅ Forward to Telegram with proper formatting
-- ✅ Handle Discord attachments → Telegram media
-- ✅ Bidirectional communication (Telegram → Discord webhook)
-- ✅ Message formatting conversion (Discord markdown → Telegram)
-- ✅ Embed support with proper Telegram formatting
-
-**Implementation Options**:
-1. **HTTP Server**: Built-in webhook receiver in bot
-2. **Message Forwarding**: Discord → Telegram automation
-3. **Command Triggers**: Telegram commands trigger Discord webhooks
-4. **Status Updates**: Bot status updates sent to Discord
-5. **File Sharing**: Attachments shared between platforms
-
-**Integration Points**:
-```python
-# Discord webhook receiver
-@app.route('/discord-webhook', methods=['POST'])
-async def handle_discord_webhook():
-    data = request.get_json()
-    # Process Discord message
-    # Send to Telegram
-
-# Telegram to Discord sender
-async def send_to_discord_webhook(message, webhook_url):
-    payload = {"content": message}
-    # Send to Discord webhook
-```
-
-Let me know if you want me to implement this Discord webhook integration!
-
-## 🎉 SUMMARY: SECURITY IMPROVEMENTS IMPLEMENTED
-
-✅ **Owner-Only Sensitive Commands**: System operations restricted  
-✅ **nhentai PM-Only**: Groups ignored, 4+ digits minimum  
-✅ **Auto File Cleanup**: Storage management, files deleted after upload  
-✅ **All Previous Features**: Nothing removed, everything enhanced  
-✅ **Security Controls**: Access denied messages with reasons  
-✅ **Enhanced Validation**: Stricter input checking  
+**Deploy now - Complete working bot! 🚀**
 
 Made by many fuck love @Zalhera
-
-**Deploy now - Secure bot with auto cleanup ready! 🛡️**

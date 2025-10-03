@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-echo "🛡️ STB Setup - SECURE VERSION WITH AUTO CLEANUP"
-echo "==============================================="
+echo "🎉 STB Bot Setup - FINAL REVISION"
+echo "=================================="
 
 # Must be run as root
 if [ "$EUID" -ne 0 ]; then
@@ -11,12 +11,13 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Update system
+echo "📦 Updating system packages..."
 apt-get update
 apt-get install -y ca-certificates curl gnupg lsb-release python3 python3-pip python3-full git build-essential sudo ffmpeg aria2
 
 # Install Docker
 if ! command -v docker >/dev/null; then
-    echo "📦 Installing Docker with secure configuration..."
+    echo "🐳 Installing Docker..."
     curl -fsSL https://get.docker.com | sh
     systemctl enable docker
     systemctl start docker
@@ -25,40 +26,37 @@ fi
 # Install Docker Compose plugin
 apt-get install -y docker-compose-plugin
 
-# Configure secure root password
-echo "🔑 Setting secure root password: hakumen12312"
-echo "root:hakumen12312" | chpasswd
-
-# Configure secure system access
-echo "🛡️ Configuring secure system access..."
-echo "ALL ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/stb-bot-secure
-chmod 440 /etc/sudoers.d/stb-bot-secure
-
 # Install yt-dlp system-wide
 echo "📱 Installing yt-dlp for social media downloads..."
 curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
 chmod a+rx /usr/local/bin/yt-dlp
 
+# Test yt-dlp
+echo "🧪 Testing yt-dlp..."
+if yt-dlp --version >/dev/null 2>&1; then
+    echo "✅ yt-dlp installed successfully"
+else
+    echo "⚠️ yt-dlp installation issue"
+fi
+
+# Test ffmpeg
+echo "🧪 Testing ffmpeg..."
+if ffmpeg -version >/dev/null 2>&1; then
+    echo "✅ ffmpeg available"
+else
+    echo "⚠️ ffmpeg installation issue"
+fi
+
 # Fix pip environment
 export PIP_BREAK_SYSTEM_PACKAGES=1
 echo "export PIP_BREAK_SYSTEM_PACKAGES=1" >> /etc/profile
 
-# Test secure access
-echo "🧪 Testing secure system access..."
-whoami
-if sudo -u root whoami >/dev/null 2>&1; then
-    echo "✅ Secure system access confirmed"
-else
-    echo "⚠️ Secure access issue - check configuration"
-fi
-
 echo ""
-echo "✅ SECURE VERSION SETUP COMPLETED!"
-echo "🛡️ Security: Owner-only sensitive commands"
-echo "📖 nhentai: PM only, 4+ digits minimum"
+echo "✅ FINAL REVISION SETUP COMPLETED!"
+echo "📱 Social Media: Facebook, Instagram, Twitter/X, YouTube"
+echo "🔍 Reverse Search: Enhanced anime + illustration detection"
+echo "📖 nhentai: PM-only, PDF downloads"
+echo "🎵 Video Converter: MP3, FLAC"
 echo "🧹 Auto Cleanup: Files deleted after upload"
-echo "📱 Social Media: Facebook, Instagram, Twitter, YouTube"
-echo "🔍 Auto Features: Reverse search, nhentai (PM only)"
-echo "☁️ Google Drive: Mirror, Torrent with cleanup"
-echo "🔑 Secure Password: hakumen12312"
+echo "☁️ Google Drive: Optional (owner features)"
 echo "📋 Next: ./start.sh"

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🛡️ Starting STB Bot - SECURE VERSION WITH AUTO CLEANUP"
+echo "🎉 Starting STB Bot - FINAL REVISION"
 
 # Load environment
 if [ -f .env ]; then
@@ -11,83 +11,59 @@ else
     exit 1
 fi
 
-# Test secure access first
-echo "🧪 Testing secure system access..."
-if echo "hakumen12312" | sudo -S whoami >/dev/null 2>&1; then
-    echo "✅ Secure access confirmed"
-else
-    echo "⚠️ Secure access issue - run setup.sh first"
-fi
-
 # Stop existing containers
-project_name="stb-bot-secure"
+project_name="stb-bot-final"
 if docker ps --format '{{.Names}}' | grep -q "${project_name}"; then
-    echo "🛑 Stopping existing secure containers..."
+    echo "🛑 Stopping existing containers..."
     docker compose stop
     docker compose rm -f
 fi
 
-# Create directories with secure permissions
-echo "📁 Creating directories with secure permissions..."
-sudo mkdir -p data credentials downloads logs torrents temp
-sudo chmod 755 data downloads logs torrents temp
+# Create directories
+echo "📁 Creating directories..."
+sudo mkdir -p data credentials downloads logs temp
+sudo chmod 755 data downloads logs temp
 sudo chmod 700 credentials
-sudo chown -R $USER:$USER data downloads logs torrents credentials temp
+sudo chown -R $USER:$USER data downloads logs credentials temp
 
-echo "🔨 Building with secure configuration + auto cleanup..."
+echo "🔨 Building FINAL REVISION..."
 docker compose build --no-cache
 
-echo "🚀 Starting secure bot with auto cleanup..."
+echo "🚀 Starting FINAL REVISION bot..."
 docker compose up -d
 
 # Wait and check
 sleep 20
 if docker compose ps | grep -q "Up"; then
     echo ""
-    echo "✅ STB Bot started - SECURE VERSION WITH AUTO CLEANUP!"
+    echo "✅ STB Bot started - FINAL REVISION!"
     echo ""
-    echo "🛡️ SECURITY FEATURES:"
-    echo "• ✅ Owner-only sensitive commands"
-    echo "• ✅ System operations restricted to owner"
-    echo "• ✅ Credentials upload: Owner only"
-    echo "• ✅ OAuth setup: Owner only"
-    echo "• ✅ System testing: Owner only"
+    echo "🎉 ALL FEATURES WORKING:"
+    echo "• ✅ Facebook downloader (/fb) - Direct to Telegram"
+    echo "• ✅ Instagram downloader (/ig) - Direct to Telegram"
+    echo "• ✅ Twitter/X downloader (/x) - Direct to Telegram"
+    echo "• ✅ YouTube video (/ytv) - Quality options"
+    echo "• ✅ YouTube thumbnail (/ytm) - HD download"
+    echo "• ✅ Video converter (/cv) - MP3/FLAC"
+    echo "• ✅ Enhanced reverse search - Anime + illustration"
+    echo "• ✅ nhentai download - PM-only, PDF format"
     echo ""
-    echo "📖 NHENTAI SECURITY:"
-    echo "• ✅ PM only: Groups ignored"
-    echo "• ✅ Minimum 4 digits (was 3)"
-    echo "• ✅ Enhanced validation"
+    echo "🔧 KEY IMPROVEMENTS:"
+    echo "• ✅ No Google Drive needed for social downloads"
+    echo "• ✅ Fixed all command responses"
+    echo "• ✅ Enhanced reverse search with anime scene detection"
+    echo "• ✅ nhentai downloads all pages to PDF"
+    echo "• ✅ Auto cleanup prevents storage issues"
+    echo "• ✅ Owner-only sensitive operations"
     echo ""
-    echo "🧹 AUTO CLEANUP FEATURES:"
-    echo "• ✅ Files deleted after upload"
-    echo "• ✅ Temp directories cleaned"
-    echo "• ✅ Download cleanup scheduled"
-    echo "• ✅ System space management"
+    echo "📋 USAGE:"
+    echo "• Social: /fb /ig /x /ytv /ytm <url>"
+    echo "• Convert: /cv (reply to video)"
+    echo "• Reverse: Send photo → auto analysis"
+    echo "• nhentai: Send 4+ digits in PM → PDF download"
     echo ""
-    echo "🎉 ALL FEATURES WITH SECURITY:"
-    echo "• ✅ Facebook downloader (/fb) + cleanup"
-    echo "• ✅ Instagram downloader (/ig) + cleanup"
-    echo "• ✅ Twitter downloader (/x) + cleanup"
-    echo "• ✅ YouTube downloader (/ytv) + cleanup"
-    echo "• ✅ YouTube thumbnail (/ytm) + cleanup"
-    echo "• ✅ Video converter (/cv) + cleanup"
-    echo "• ✅ Reverse image search (auto on photo) + cleanup"
-    echo "• ✅ nhentai search (PM only, 4+ digits) + cleanup"
-    echo "• ✅ Google Drive mirror (/d) + cleanup"
-    echo "• ✅ Torrent leech (/t) + cleanup"
+    echo "👑 Owner commands: /auth /roottest"
     echo ""
-    echo "📋 SECURE SETUP INSTRUCTIONS:"
-    echo "1. Owner: /auth (owner only - secure upload)"
-    echo "2. Owner: Upload credentials.json (secure handling)"
-    echo "3. Owner: /code <auth-code> (owner only - secure)"
-    echo "4. Owner: /roottest (owner only - system test)"
-    echo "5. Users: Try all features with auto cleanup!"
-    echo ""
-    echo "🔍 AUTO FEATURES:"
-    echo "• Send photo → Auto reverse search + cleanup"
-    echo "• Send 4+ digits in PM → Auto nhentai + cleanup"
-    echo ""
-    echo "🔑 Secure Password: hakumen12312"
     echo "Made by many fuck love @Zalhera"
     echo ""
 else

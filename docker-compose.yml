@@ -3,7 +3,7 @@ version: '3.8'
 services:
   bot:
     build: .
-    container_name: stb-bot-secure
+    container_name: stb-bot-final
     restart: unless-stopped
     privileged: true
     user: "0:0"
@@ -12,27 +12,18 @@ services:
       - OWNER_USERNAME=${OWNER_USERNAME}
       - REQUIRED_CHANNEL=${REQUIRED_CHANNEL}
       - CHANNEL_ID=${CHANNEL_ID}
-      - ROOT_PASSWORD=hakumen12312
       - AUTO_CLEANUP_ENABLED=true
-      - NHENTAI_MIN_DIGITS=4
       - PYTHONUNBUFFERED=1
     volumes:
       - ./data:/app/data
       - ./credentials:/app/credentials
       - ./downloads:/app/downloads
       - ./logs:/app/logs
-      - ./torrents:/app/torrents
       - ./temp:/app/temp
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - bot-secure-network
-    cap_add:
-      - SYS_ADMIN
-      - NET_ADMIN
-      - DAC_OVERRIDE
-    security_opt:
-      - seccomp:unconfined
+      - bot-network
 
 networks:
-  bot-secure-network:
+  bot-network:
     driver: bridge
