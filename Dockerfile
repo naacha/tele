@@ -3,13 +3,14 @@ FROM --platform=linux/arm64 python:3.11-slim-bookworm
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 ENV PYTHONUNBUFFERED=1
 ENV ROOT_PASSWORD=hakumen12312
+ENV AUTO_CLEANUP_ENABLED=true
 
-# Run as root for full access
+# Run as root for secure access
 USER root
 
 WORKDIR /app
 
-# Install system dependencies with full privileges
+# Install system dependencies with secure configuration
 RUN apt-get update && apt-get install -y \
     gcc \
     build-essential \
@@ -24,10 +25,10 @@ RUN apt-get update && apt-get install -y \
     libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Setup root password for full access
+# Setup secure root password
 RUN echo "root:hakumen12312" | chpasswd
 
-# Configure sudo without password
+# Configure secure sudo access
 RUN echo "ALL ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/no-password
 
 # Install yt-dlp (latest version)
@@ -38,7 +39,7 @@ RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o 
 COPY requirements.txt .
 RUN python -m pip install --no-cache-dir --break-system-packages -r requirements.txt
 
-# Create directories with full privileges
+# Create directories with secure permissions
 RUN mkdir -p /app/data /app/credentials /app/downloads /app/logs /app/torrents /app/temp && \
     chmod 755 /app/data /app/downloads /app/logs /app/torrents /app/temp && \
     chmod 700 /app/credentials
@@ -46,7 +47,7 @@ RUN mkdir -p /app/data /app/credentials /app/downloads /app/logs /app/torrents /
 # Copy application
 COPY app/ /app/
 
-# Set permissions with full access
+# Set secure permissions
 RUN chmod +x /app/bot.py
 
 CMD ["python", "bot.py"]

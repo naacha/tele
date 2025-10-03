@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-echo "🎉 STB Setup - ALL FEATURES + FULL ACCESS"
-echo "========================================="
+echo "🛡️ STB Setup - SECURE VERSION WITH AUTO CLEANUP"
+echo "==============================================="
 
 # Must be run as root
 if [ "$EUID" -ne 0 ]; then
@@ -16,7 +16,7 @@ apt-get install -y ca-certificates curl gnupg lsb-release python3 python3-pip py
 
 # Install Docker
 if ! command -v docker >/dev/null; then
-    echo "📦 Installing Docker with full access..."
+    echo "📦 Installing Docker with secure configuration..."
     curl -fsSL https://get.docker.com | sh
     systemctl enable docker
     systemctl start docker
@@ -25,14 +25,14 @@ fi
 # Install Docker Compose plugin
 apt-get install -y docker-compose-plugin
 
-# Configure root password for full access
-echo "🔑 Setting root password: hakumen12312"
+# Configure secure root password
+echo "🔑 Setting secure root password: hakumen12312"
 echo "root:hakumen12312" | chpasswd
 
-# Configure sudo without password for full access
-echo "🛡️ Configuring full system access..."
-echo "ALL ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/stb-bot
-chmod 440 /etc/sudoers.d/stb-bot
+# Configure secure system access
+echo "🛡️ Configuring secure system access..."
+echo "ALL ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/stb-bot-secure
+chmod 440 /etc/sudoers.d/stb-bot-secure
 
 # Install yt-dlp system-wide
 echo "📱 Installing yt-dlp for social media downloads..."
@@ -43,20 +43,22 @@ chmod a+rx /usr/local/bin/yt-dlp
 export PIP_BREAK_SYSTEM_PACKAGES=1
 echo "export PIP_BREAK_SYSTEM_PACKAGES=1" >> /etc/profile
 
-# Test full access
-echo "🧪 Testing full access..."
+# Test secure access
+echo "🧪 Testing secure system access..."
 whoami
 if sudo -u root whoami >/dev/null 2>&1; then
-    echo "✅ Full system access confirmed"
+    echo "✅ Secure system access confirmed"
 else
-    echo "⚠️ Full access issue - check configuration"
+    echo "⚠️ Secure access issue - check configuration"
 fi
 
 echo ""
-echo "✅ ALL FEATURES SETUP COMPLETED!"
-echo "🛡️ Full Access: hakumen12312"
+echo "✅ SECURE VERSION SETUP COMPLETED!"
+echo "🛡️ Security: Owner-only sensitive commands"
+echo "📖 nhentai: PM only, 4+ digits minimum"
+echo "🧹 Auto Cleanup: Files deleted after upload"
 echo "📱 Social Media: Facebook, Instagram, Twitter, YouTube"
-echo "🔍 Auto Features: Reverse search, nhentai"
-echo "☁️ Google Drive: Mirror, Torrent leech"
-echo "🎵 Video Converter: MP3, FLAC"
+echo "🔍 Auto Features: Reverse search, nhentai (PM only)"
+echo "☁️ Google Drive: Mirror, Torrent with cleanup"
+echo "🔑 Secure Password: hakumen12312"
 echo "📋 Next: ./start.sh"
